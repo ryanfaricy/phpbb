@@ -60,8 +60,9 @@ class container_factory
 	 * @param string		$phpbb_root_path	Path to phpBB's root
 	 * @param string		$php_ext			Extension of PHP files
 	 */
-	public function __construct(language $language, request $request, update_helper $update_helper, $phpbb_root_path, $php_ext)
+	public function __construct(\phpbb\config\config $config, language $language, request $request, update_helper $update_helper, $phpbb_root_path, $php_ext)
 	{
+		$this->config			= $config;
 		$this->language			= $language;
 		$this->request			= $request;
 		$this->update_helper	= $update_helper;
@@ -163,10 +164,12 @@ class container_factory
 		// this container
 		if (!$this->container->isFrozen())
 		{
+			$this->container->register('config')->setSynthetic(true);
 			$this->container->register('request')->setSynthetic(true);
 			$this->container->register('language')->setSynthetic(true);
 		}
 
+		$this->container->set('config', $this->request);
 		$this->container->set('request', $this->request);
 		$this->container->set('language', $this->language);
 
