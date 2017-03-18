@@ -20,6 +20,16 @@ use phpbb\request\request;
 class container_factory
 {
 	/**
+	 * @var \phpbb\install\helper\config
+	 */
+	protected $config_helper;
+
+	/**
+	 * @var \phpbb\install\helper\database
+	 */
+	protected $db_helper;
+
+	/**
 	 * @var language
 	 */
 	protected $language;
@@ -60,9 +70,10 @@ class container_factory
 	 * @param string		$phpbb_root_path	Path to phpBB's root
 	 * @param string		$php_ext			Extension of PHP files
 	 */
-	public function __construct(\phpbb\config\config $config, language $language, request $request, update_helper $update_helper, $phpbb_root_path, $php_ext)
+	public function __construct(\phpbb\install\helper\config $config_helper, \phpbb\install\helper\database $db_helper, language $language, request $request, update_helper $update_helper, $phpbb_root_path, $php_ext)
 	{
-		$this->config			= $config;
+		$this->config_helper	= $config_helper;
+		$this->db_helper		= $db_helper;
 		$this->language			= $language;
 		$this->request			= $request;
 		$this->update_helper	= $update_helper;
@@ -165,11 +176,29 @@ class container_factory
 		if (!$this->container->isFrozen())
 		{
 			$this->container->register('config')->setSynthetic(true);
+			$this->container->register('db')->setSynthetic(true);
 			$this->container->register('request')->setSynthetic(true);
 			$this->container->register('language')->setSynthetic(true);
 		}
 
-		$this->container->set('config', $this->request);
+		$dbms = $this->db_helper->get_available_dbms($this->config_helper->get('dbms'));
+		$dbms = $dbms[$this->config_helper->get('dbms')]['DRIVER'];
+
+		$db = new $dbms();
+		$db->sql_connect(
+			$this->config_helper->get('dbhost'),
+			$this->config_helper->get('dbuser'),
+			$this->config_helper->get('dbpasswd'),
+			$this->config_helper->get('dbname'),
+			$this->config_helper->get('dbport'),
+			false,
+			false
+		);
+
+		$config = new \phpbb\config\db($db, new \phpbb\cache\driver\dummy, CONFIG_TABLE);
+
+		$this->container->set('config', $config);
+		$this->container->set('db', $this->db);
 		$this->container->set('request', $this->request);
 		$this->container->set('language', $this->language);
 

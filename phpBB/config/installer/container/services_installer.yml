@@ -60,7 +60,8 @@ services:
     installer.helper.container_factory:
         class: phpbb\install\helper\container_factory
         arguments:
-            - '@config'
+            - '@installer.helper.config'
+            - '@installer.helper.database'
             - '@language'
             - '@request'
             - '@installer.helper.update_helper'
