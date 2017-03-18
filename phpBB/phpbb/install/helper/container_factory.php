@@ -198,7 +198,7 @@ class container_factory
 		$config = new \phpbb\config\db($db, new \phpbb\cache\driver\dummy, CONFIG_TABLE);
 
 		$this->container->set('config', $config);
-		$this->container->set('db', $this->db);
+		$this->container->set('db', $db);
 		$this->container->set('request', $this->request);
 		$this->container->set('language', $this->language);
 
