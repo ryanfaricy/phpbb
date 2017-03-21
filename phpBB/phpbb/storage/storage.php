@@ -4,13 +4,6 @@ namespace phpbb\storage;
 
 class storage implements storage_interface
 {
-	public function __construct(storage_adapter_interface $adapter)
-	{
-		// $adapter = \phpbb\filesystem\filesystem
-		// $adapter = \ext\rubencm\phpbb-cloud-storage\adapters\s3
-		$this->adapter = $adapter;
-	}
-
 	/**
 	 * {@inheritdoc}
 	 */
