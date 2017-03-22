@@ -152,6 +152,7 @@ services:
         arguments:
             - '%core.root_path%'
             - '@config'
+            - '@filesystem'
             - '@request'
             - '@user'
             - '@php_ini'

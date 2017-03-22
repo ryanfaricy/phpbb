@@ -29,6 +29,11 @@ class plupload
 	protected $config;
 
 	/**
+	* @var \phpbb\filesystem\filesystem_interface
+	*/
+	protected $filesystem;
+
+	/**
 	* @var \phpbb\request\request_interface
 	*/
 	protected $request;
@@ -70,10 +75,11 @@ class plupload
 	* @param \bantu\IniGetWrapper\IniGetWrapper $php_ini
 	* @param \phpbb\mimetype\guesser $mimetype_guesser
 	*/
-	public function __construct($phpbb_root_path, \phpbb\config\config $config, \phpbb\request\request_interface $request, \phpbb\user $user, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \phpbb\mimetype\guesser $mimetype_guesser)
+	public function __construct($phpbb_root_path, \phpbb\config\config $config, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\request\request_interface $request, \phpbb\user $user, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \phpbb\mimetype\guesser $mimetype_guesser)
 	{
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->config = $config;
+		$this->filesystem = $filesystem;
 		$this->request = $request;
 		$this->user = $user;
 		$this->php_ini = $php_ini;

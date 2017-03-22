@@ -45,7 +45,7 @@ class upload extends \phpbb\avatar\driver\driver
 	* @param \phpbb\files\factory $files_factory File classes factory
 	* @param \phpbb\cache\driver\driver_interface $cache Cache driver
 	*/
-	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\storage\storage_interface $filesystem, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
+	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
 	{
 		$this->config = $config;
 		$this->phpbb_root_path = $phpbb_root_path;
@@ -281,12 +281,20 @@ class upload extends \phpbb\avatar\driver\driver
 		);
 		extract($this->dispatcher->trigger_event('core.avatar_driver_upload_delete_before', compact($vars)));
 
-		if (!sizeof($error) && file_exists($filename))
+		if (!sizeof($error) && $this->filesystem->exists($filename))
 		{
-			@unlink($filename);
+			try
+			{
+				$this->filesystem->remove($filename);
+				return true;
+			}
+			catch (\phpbb\filesystem\exception\filesystem_exception $e)
+			{
+				// Fail is covered by return statement below
+			}
 		}
 
-		return true;
+		return false;
 	}
 
 	/**
@@ -304,6 +312,6 @@ class upload extends \phpbb\avatar\driver\driver
 	*/
 	protected function can_upload()
 	{
-		return (file_exists($this->phpbb_root_path . $this->config['avatar_path']) && $this->filesystem->is_writable($this->phpbb_root_path . $this->config['avatar_path']) && (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on'));
+		return ($this->filesystem->exists($this->phpbb_root_path . $this->config['avatar_path']) && $this->filesystem->is_writable($this->phpbb_root_path . $this->config['avatar_path']) && (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on'));
 	}
 }

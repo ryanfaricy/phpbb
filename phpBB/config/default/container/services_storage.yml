@@ -1,6 +1,7 @@
 services:
-    storage:
-        avatar_upload:
-            class: phpbb\storage\avatar_upload_storage
-            arguments:
-                - '@filesystem'
+    storage.avatar_upload:
+        class: phpbb\storage\avatar_upload
+        arguments:
+            - '@config'
+            - '@filesystem'
+            - '@dispatcher'

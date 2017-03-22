@@ -4,6 +4,10 @@ namespace phpbb\storage;
 
 class storage implements storage_interface
 {
+	protected $config;
+	protected $adapter;
+	//protected $dispatcher;
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -65,7 +69,7 @@ class storage implements storage_interface
 	 */
 	public function is_absolute_path($path)
 	{
-		return $this->adapter->is_absolute_path($path);;
+		return $this->adapter->is_absolute_path($path);
 	}
 
 	/**
@@ -89,7 +93,7 @@ class storage implements storage_interface
 	 */
 	public function make_path_relative($end_path, $start_path)
 	{
-		return $this->symfony_filesystem->makePathRelative($end_path, $start_path);
+		return $this->symfony_filesystem->make_path_relative($end_path, $start_path);
 	}
 
 	/**
@@ -113,7 +117,7 @@ class storage implements storage_interface
 	 */
 	public function phpbb_chmod($files, $perms = null, $recursive = false, $force_chmod_link = false)
 	{
-		return $this->adapter->chmod($files, $perms, $recursive, $force_chmod_link);
+		return $this->adapter->phpbb_chmod($files, $perms, $recursive, $force_chmod_link);
 	}
 
 	/**
@@ -129,7 +133,7 @@ class storage implements storage_interface
 	 */
 	public function remove($files)
 	{
-		return $this->adapter->realpath($path);
+		return $this->adapter->remove($files);
 	}
 
 	/**
@@ -145,7 +149,7 @@ class storage implements storage_interface
 	 */
 	public function symlink($origin_dir, $target_dir, $copy_on_windows = false)
 	{
-		return $this->adapter->rename($origin_dir, $target_dir, $copy_on_windows);
+		return $this->adapter->symlink($origin_dir, $target_dir, $copy_on_windows);
 	}
 
 	/**
@@ -167,7 +171,7 @@ class storage implements storage_interface
 	 */
 	protected function phpbb_is_writable($file)
 	{
-		return $this->adapter->is_writable($file);
+		return $this->adapter->phpbb_is_writable($file);
 	}
 
 	/**
@@ -178,7 +182,7 @@ class storage implements storage_interface
 	 */
 	protected function phpbb_own_realpath($path)
 	{
-		return $this->adapter->realpath($path);
+		return $this->adapter->phpbb_own_realpath($path);
 	}
 
 	/**
