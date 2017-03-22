@@ -19,9 +19,9 @@ namespace phpbb\avatar\driver;
 class upload extends \phpbb\avatar\driver\driver
 {
 	/**
-	 * @var \phpbb\filesystem\filesystem_interface
+	 * @var \phpbb\storage\storage_interface
 	 */
-	protected $filesystem;
+	protected $storage;
 
 	/**
 	* @var \phpbb\event\dispatcher_interface
@@ -39,18 +39,18 @@ class upload extends \phpbb\avatar\driver\driver
 	* @param \phpbb\config\config $config phpBB configuration
 	* @param string $phpbb_root_path Path to the phpBB root
 	* @param string $php_ext PHP file extension
-	* @param \phpbb\filesystem\filesystem_interface $filesystem phpBB filesystem helper
+	* @param \phpbb\storage\storage_interface $storage phpBB storage helper
 	* @param \phpbb\path_helper $path_helper phpBB path helper
 	* @param \phpbb\event\dispatcher_interface $dispatcher phpBB Event dispatcher object
 	* @param \phpbb\files\factory $files_factory File classes factory
 	* @param \phpbb\cache\driver\driver_interface $cache Cache driver
 	*/
-	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
+	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\storage\storage_interface $storage, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
 	{
 		$this->config = $config;
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
-		$this->filesystem = $filesystem;
+		$this->storage = $storage;
 		$this->path_helper = $path_helper;
 		$this->dispatcher = $dispatcher;
 		$this->files_factory = $files_factory;
@@ -281,12 +281,12 @@ class upload extends \phpbb\avatar\driver\driver
 		);
 		extract($this->dispatcher->trigger_event('core.avatar_driver_upload_delete_before', compact($vars)));
 
-		if (!sizeof($error) && file_exists($filename))
+		if (!sizeof($error) && $this->storage->exists($filename))
 		{
-			@unlink($filename);
+			$this->storage->remove($filename);
 		}
 
-		return true;
+		return false;
 	}
 
 	/**
@@ -304,6 +304,6 @@ class upload extends \phpbb\avatar\driver\driver
 	*/
 	protected function can_upload()
 	{
-		return (file_exists($this->phpbb_root_path . $this->config['avatar_path']) && $this->filesystem->is_writable($this->phpbb_root_path . $this->config['avatar_path']) && (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on'));
+		return ($this->storage->exists($this->phpbb_root_path . $this->config['avatar_path']) && $this->storage->is_writable($this->phpbb_root_path . $this->config['avatar_path']) && (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on'));
 	}
 }

@@ -16,7 +16,7 @@ namespace phpbb\attachment;
 use \phpbb\config\config;
 use \phpbb\db\driver\driver_interface;
 use \phpbb\event\dispatcher;
-use \phpbb\filesystem\filesystem;
+use \phpbb\storage\storage;
 
 /**
  * Attachment delete class
@@ -32,8 +32,8 @@ class delete
 	/** @var dispatcher */
 	protected $dispatcher;
 
-	/** @var filesystem  */
-	protected $filesystem;
+	/** @var storage  */
+	protected $storage;
 
 	/** @var resync */
 	protected $resync;
@@ -71,16 +71,16 @@ class delete
 	 * @param config $config
 	 * @param driver_interface $db
 	 * @param dispatcher $dispatcher
-	 * @param filesystem $filesystem
+	 * @param storage $storage
 	 * @param resync $resync
 	 * @param string $phpbb_root_path
 	 */
-	public function __construct(config $config, driver_interface $db, dispatcher $dispatcher, filesystem $filesystem, resync $resync, $phpbb_root_path)
+	public function __construct(config $config, driver_interface $db, dispatcher $dispatcher, storage $storage, resync $resync, $phpbb_root_path)
 	{
 		$this->config = $config;
 		$this->db = $db;
 		$this->dispatcher = $dispatcher;
-		$this->filesystem = $filesystem;
+		$this->storage = $storage;
 		$this->resync = $resync;
 		$this->phpbb_root_path = $phpbb_root_path;
 	}
@@ -416,9 +416,9 @@ class delete
 
 		try
 		{
-			if ($this->filesystem->exists($filepath))
+			if ($this->storage->exists($filepath))
 			{
-				$this->filesystem->remove($this->phpbb_root_path . $this->config['upload_path'] . '/' . $filename);
+				$this->storage->remove($this->phpbb_root_path . $this->config['upload_path'] . '/' . $filename);
 				return true;
 			}
 		}

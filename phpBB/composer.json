@@ -47,12 +47,14 @@
 		"symfony/routing": "~3.1",
 		"symfony/twig-bridge": "~3.1",
 		"symfony/yaml": "~3.1",
-		"twig/twig": "^1.0,<1.25"
+		"twig/twig": "^1.0,<1.25",
+		"league/flysystem": "^1.0",
+		"league/flysystem-dropbox": "^1.0"
 	},
 	"require-dev": {
 		"fabpot/goutte": "~3.1",
 		"facebook/webdriver": "~1.1",
-		"laravel/homestead": "~3.0",
+		"laravel/homestead": "*",
 		"phing/phing": "2.4.*",
 		"phpunit/dbunit": "~2.0",
 		"phpunit/phpunit": "^4.1",

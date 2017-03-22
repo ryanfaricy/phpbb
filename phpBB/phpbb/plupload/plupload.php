@@ -29,6 +29,11 @@ class plupload
 	protected $config;
 
 	/**
+	* @var \phpbb\storage\storage_interface
+	*/
+	protected $storage;
+
+	/**
 	* @var \phpbb\request\request_interface
 	*/
 	protected $request;
@@ -70,10 +75,11 @@ class plupload
 	* @param \bantu\IniGetWrapper\IniGetWrapper $php_ini
 	* @param \phpbb\mimetype\guesser $mimetype_guesser
 	*/
-	public function __construct($phpbb_root_path, \phpbb\config\config $config, \phpbb\request\request_interface $request, \phpbb\user $user, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \phpbb\mimetype\guesser $mimetype_guesser)
+	public function __construct($phpbb_root_path, \phpbb\config\config $config, \phpbb\storage\storage_interface $storage, \phpbb\request\request_interface $request, \phpbb\user $user, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \phpbb\mimetype\guesser $mimetype_guesser)
 	{
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->config = $config;
+		$this->storage = $storage;
 		$this->request = $request;
 		$this->user = $user;
 		$this->php_ini = $php_ini;
@@ -117,7 +123,7 @@ class plupload
 		// next chunk.
 		if ($chunk == $chunks_expected - 1)
 		{
-			rename("{$file_path}.part", $file_path);
+			$this->storage->rename("{$file_path}.part", $file_path);
 
 			// Reset upload directories to defaults once completed
 			$this->set_default_directories();
@@ -326,26 +332,26 @@ class plupload
 
 		$tmp_file = $this->temporary_filepath($upload['tmp_name']);
 
-		if (!phpbb_is_writable($this->temporary_directory) || !move_uploaded_file($upload['tmp_name'], $tmp_file))
+		if (!$this->storage->phpbb_is_writable($this->temporary_directory) || !move_uploaded_file($upload['tmp_name'], $tmp_file))
 		{
 			$this->emit_error(103, 'PLUPLOAD_ERR_MOVE_UPLOADED');
 		}
 
-		$out = fopen("{$file_path}.part", $chunk == 0 ? 'wb' : 'ab');
+		$out = $this->storage->fopen("{$file_path}.part", $chunk == 0 ? 'wb' : 'ab');
 		if (!$out)
 		{
 			$this->emit_error(102, 'PLUPLOAD_ERR_OUTPUT');
 		}
 
-		$in = fopen(($is_multipart) ? $tmp_file : 'php://input', 'rb');
+		$in = $this->storage->fopen(($is_multipart) ? $tmp_file : 'php://input', 'rb');
 		if (!$in)
 		{
 			$this->emit_error(101, 'PLUPLOAD_ERR_INPUT');
 		}
 
-		while ($buf = fread($in, 4096))
+		while ($buf = $this->storage->fread($in, 4096))
 		{
-			fwrite($out, $buf);
+			$this->storage->fwrite($out, $buf);
 		}
 
 		fclose($in);
@@ -353,7 +359,7 @@ class plupload
 
 		if ($is_multipart)
 		{
-			unlink($tmp_file);
+			$this->storage->remove($tmp_file);
 		}
 	}
 
@@ -364,11 +370,11 @@ class plupload
 	*/
 	protected function prepare_temporary_directory()
 	{
-		if (!file_exists($this->temporary_directory))
+		if (!$this->storage->exists($this->temporary_directory))
 		{
-			mkdir($this->temporary_directory);
+			$this->storage->mkdir($this->temporary_directory);
 
-			copy(
+			$this->storage->copy(
 				$this->upload_directory . '/index.htm',
 				$this->temporary_directory . '/index.htm'
 			);

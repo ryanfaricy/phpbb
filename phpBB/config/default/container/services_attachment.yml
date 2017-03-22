@@ -6,7 +6,7 @@ services:
             - '@config'
             - '@dbal.conn'
             - '@dispatcher'
-            - '@filesystem'
+            - '@@storage'
             - '@attachment.resync'
             - '%core.root_path%'
 

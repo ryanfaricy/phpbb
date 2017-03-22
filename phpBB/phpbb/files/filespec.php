@@ -69,8 +69,8 @@ class filespec
 	/** @var upload Instance of upload class  */
 	public $upload;
 
-	/** @var \phpbb\filesystem\filesystem_interface */
-	protected $filesystem;
+	/** @var \phpbb\storage\storage_interface */
+	protected $storage;
 
 	/** @var \bantu\IniGetWrapper\IniGetWrapper ini_get() wrapper class */
 	protected $php_ini;
@@ -93,7 +93,7 @@ class filespec
 	/**
 	 * File upload class
 	 *
-	 * @param \phpbb\filesystem\filesystem_interface	$phpbb_filesystem Filesystem
+	 * @param \phpbb\$storage\$storage_interface	$storage Filesystem
 	 * @param language					$language Language
 	 * @param \bantu\IniGetWrapper\IniGetWrapper			$php_ini ini_get() wrapper
 	 * @param \FastImageSize\FastImageSize $imagesize Imagesize class
@@ -101,9 +101,9 @@ class filespec
 	 * @param \phpbb\mimetype\guesser	$mimetype_guesser Mime type guesser
 	 * @param \phpbb\plupload\plupload	$plupload Plupload
 	 */
-	public function __construct(\phpbb\filesystem\filesystem_interface $phpbb_filesystem, language $language, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \FastImageSize\FastImageSize $imagesize, $phpbb_root_path, \phpbb\mimetype\guesser $mimetype_guesser = null, \phpbb\plupload\plupload $plupload = null)
+	public function __construct(\phpbb\storage\storage_interface $storage, language $language, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \FastImageSize\FastImageSize $imagesize, $phpbb_root_path, \phpbb\mimetype\guesser $mimetype_guesser = null, \phpbb\plupload\plupload $plupload = null)
 	{
-		$this->filesystem = $phpbb_filesystem;
+		$this->storage = $storage;
 		$this->language = $language;
 		$this->php_ini = $php_ini;
 		$this->imagesize = $imagesize;
@@ -401,6 +401,7 @@ class filespec
 	 * @return bool True if file was moved, false if not
 	 * @access public
 	 */
+	 // cant copy between different file systems !!!
 	public function move_file($destination, $overwrite = false, $skip_image_check = false, $chmod = false)
 	{
 		if (sizeof($this->error))
@@ -414,7 +415,7 @@ class filespec
 		$this->destination_path = $this->phpbb_root_path . $destination;
 
 		// Check if the destination path exist...
-		if (!file_exists($this->destination_path))
+		if (!$this->storage->exists($this->destination_path))
 		{
 			@unlink($this->filename);
 			return false;
@@ -425,29 +426,29 @@ class filespec
 		$this->destination_file = $this->destination_path . '/' . utf8_basename($this->realname);
 
 		// Check if the file already exist, else there is something wrong...
-		if (file_exists($this->destination_file) && !$overwrite)
+		if ($this->storage->exists($this->destination_file) && !$overwrite)
 		{
 			@unlink($this->filename);
-			$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR', $this->destination_file);
+			$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR1', $this->destination_file);
 			$this->file_moved = false;
 			return false;
 		}
 		else
 		{
-			if (file_exists($this->destination_file))
+			if ($this->storage->exists($this->destination_file))
 			{
-				@unlink($this->destination_file);
+				$this->storage->remove($this->destination_file);
 			}
 
 			switch ($upload_mode)
 			{
 				case 'copy':
 
-					if (!@copy($this->filename, $this->destination_file))
+					if (!@$this->storage->copy($this->filename, $this->destination_file))
 					{
-						if (!@move_uploaded_file($this->filename, $this->destination_file))
+						if (!@$this->storage->move_uploaded_file($this->filename, $this->destination_file))
 						{
-							$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR', $this->destination_file);
+							$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR2', $this->destination_file);
 						}
 					}
 
@@ -455,11 +456,11 @@ class filespec
 
 				case 'move':
 
-					if (!@move_uploaded_file($this->filename, $this->destination_file))
+					if (!@$this->storage->move_uploaded_file($this->filename, $this->destination_file))
 					{
-						if (!@copy($this->filename, $this->destination_file))
+						if (!@$this->storage->copy($this->filename, $this->destination_file))
 						{
-							$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR', $this->destination_file);
+							$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR3', $this->destination_file);
 						}
 					}
 
@@ -467,9 +468,9 @@ class filespec
 
 				case 'local':
 
-					if (!@copy($this->filename, $this->destination_file))
+					if (!@$this->storage->copy($this->filename, $this->destination_file))
 					{
-						$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR', $this->destination_file);
+						$this->error[] = $this->language->lang($this->upload->error_prefix . 'GENERAL_UPLOAD_ERROR4', $this->destination_file);
 					}
 
 				break;
@@ -485,7 +486,7 @@ class filespec
 
 			try
 			{
-				$this->filesystem->phpbb_chmod($this->destination_file, $chmod);
+				$this->storage->phpbb_chmod($this->destination_file, $chmod);
 			}
 			catch (\phpbb\filesystem\exception\filesystem_exception $e)
 			{
