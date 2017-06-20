@@ -17,97 +17,127 @@ use phpbb\storage\exception\exception;
 
 class local implements adapter_interface
 {
-	protected $filesystem;
+	protected $symfony_filesystem;
 
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
-		$this->filesystem = new \phpbb\filesystem\filesystem();
+		$this->symfony_filesystem	= new \Symfony\Component\Filesystem\Filesystem();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function put_contents($path, $content)
 	{
+		if ($this->exists($path))
+		{
+			//throw new exception('FILE_EXISTS', $path);
+		}
+
 		try
 		{
-			if ($this->exists($path))
-			{
-				throw new exception('CANNOT_OPEN_FILE', $path);
-			}
-
-			$this->filesystem->dump_file($path, $content);
+			$this->symfony_filesystem->dumpFile($path, $content);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
 		{
 			throw new exception('CANNOT_DUMP_FILE', $path, array(), $e);
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function get_contents($path)
 	{
-		$stream = $this->read_stream($path);
-		$contents = stream_get_contents($stream);
-		fclose($stream);
-
-		return $stream;
+		return file_get_contents($path);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function exists($path)
 	{
-		return $this->filesystem->exists($path);
+		return $this->symfony_filesystem->exists($path);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function delete($path)
 	{
-		try
-		{
-			$this->filesystem->remove($path);
-		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
-		{
-			throw new exception('CANNOT_DELETE_FILES', $path, array(), $e);
-		}
+		$this->delete_dir($path);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function rename($path_orig, $path_dest)
 	{
 		try
 		{
-			$this->filesystem->rename($path_orig, $path_dest, false);
+			$this->symfony_filesystem->rename($path_orig, $path_dest, false);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
 		{
-			throw new exception('CANNOT_RENAME_FILE', $path_orig, array(), $e);
+			$msg = $e->getMessage();
+			$filename = substr($msg, strpos($msg, '"'), strrpos($msg, '"'));
+
+			throw new exception('CANNOT_RENAME_FILE', $filename, array(), $e);
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function copy($path_orig, $path_dest)
 	{
 		try
 		{
-			$this->filesystem->copy($path_orig, $path_dest, false);
+			$this->symfony_filesystem->copy($path_orig, $path_dest, false);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
 		{
 			throw new exception('CANNOT_COPY_FILES', '', array(), $e);
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function create_dir($path)
+	{
+		if(!mkdir($path, 0777, true))
+		{
+			throw new exception('CANNOT_CREATE_DIRECTORY', $path);
+		}
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function delete_dir($path)
 	{
 		try
 		{
-			$this->filesystem->mkdir($path, 0777);
+			$this->symfony_filesystem->remove($path);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
 		{
-			throw new exception('CANNOT_CREATE_DIRECTORY', $path, array(), $e);
+			// Try to recover filename
+			// By the time this is written that is at the end of the message
+			$error = trim($e->getMessage());
+			$file = substr($error, strrpos($error, ' '));
+
+			throw new exception('CANNOT_REMOVE_DIRECTORY', $file, array(), $e);
 		}
 	}
 
-	public function delete_dir($path)
-	{
-		$this->delete($path);
-	}
-
+	/**
+	 * {@inheritdoc}
+	 */
 	public function read_stream($path)
 	{
 		$stream = @fopen($path, 'rb');
@@ -120,6 +150,9 @@ class local implements adapter_interface
 		return $stream;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function write_stream($path, $resource)
 	{
 		if ($this->exists($path))

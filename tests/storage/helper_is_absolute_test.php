@@ -11,7 +11,7 @@
  *
  */
 
-class phpbb_dyptshr_is_absolute_test extends phpbb_test_case
+class phpbb_storage_helper_is_absolute_test extends phpbb_test_case
 {
 
 	public function setUp()
