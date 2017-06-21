@@ -13,7 +13,7 @@
 
 class phpbb_storage_helper_realpath_test extends phpbb_test_case
 {
-	protected static $helper_phpbb_own_realpath;
+	protected static $storage_helper_phpbb_own_realpath;
 
 	static public function setUpBeforeClass()
 	{
