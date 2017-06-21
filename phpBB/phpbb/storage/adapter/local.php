@@ -14,17 +14,23 @@
 namespace phpbb\storage\adapter;
 
 use phpbb\storage\exception\exception;
+use phpbb\filesystem\filesystem_exception;
 
 class local implements adapter_interface
 {
-	protected $symfony_filesystem;
+	/**
+	 * Filesystem component
+	 *
+	 * @var \phpbb\filesystem\filesystem
+	 */
+	protected $filesystem;
 
 	/**
 	 * Constructor
 	 */
 	public function __construct()
 	{
-		$this->symfony_filesystem	= new \Symfony\Component\Filesystem\Filesystem();
+		$this->filesystem = new \phpbb\filesystem\filesystem();
 	}
 
 	/**
@@ -34,16 +40,16 @@ class local implements adapter_interface
 	{
 		if ($this->exists($path))
 		{
-			//throw new exception('FILE_EXISTS', $path);
+			throw new exception('', $path); // FILE_EXISTS
 		}
 
 		try
 		{
-			$this->symfony_filesystem->dumpFile($path, $content);
+			$this->filesystem->dump_file($path, $content);
 		}
-		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_DUMP_FILE', $path, array(), $e);
+			throw new exception('', $path, array(), $e); // CANNOT_DUMP_FILE
 		}
 	}
 
@@ -52,7 +58,17 @@ class local implements adapter_interface
 	 */
 	public function get_contents($path)
 	{
-		return file_get_contents($path);
+		if (!$this->exists($path))
+		{
+			throw new exception('', $path); // FILE_DONT_EXIST
+		}
+
+		if(($content = @file_get_contents($path)) === FALSE)
+		{
+			throw new exception('', $path); // CANNOT READ FILE
+		}
+
+		return $content;
 	}
 
 	/**
@@ -60,7 +76,7 @@ class local implements adapter_interface
 	 */
 	public function exists($path)
 	{
-		return $this->symfony_filesystem->exists($path);
+		return $this->filesystem->exists($path);
 	}
 
 	/**
@@ -68,7 +84,14 @@ class local implements adapter_interface
 	 */
 	public function delete($path)
 	{
-		$this->delete_dir($path);
+		try
+		{
+			$this->filesystem->remove($path);
+		}
+		catch (filesystem_exception $e)
+		{
+			throw new exception('', $path, array(), $e); // CANNOT DELETE
+		}
 	}
 
 	/**
@@ -78,14 +101,11 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->symfony_filesystem->rename($path_orig, $path_dest, false);
+			$this->filesystem->rename($path_orig, $path_dest, false);
 		}
-		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
+		catch (filesystem_exception $e)
 		{
-			$msg = $e->getMessage();
-			$filename = substr($msg, strpos($msg, '"'), strrpos($msg, '"'));
-
-			throw new exception('CANNOT_RENAME_FILE', $filename, array(), $e);
+			throw new exception('', $path_orig, array(), $e); // CANNOT_RENAME
 		}
 	}
 
@@ -96,11 +116,11 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->symfony_filesystem->copy($path_orig, $path_dest, false);
+			$this->filesystem->copy($path_orig, $path_dest, false);
 		}
-		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_COPY_FILES', '', array(), $e);
+			throw new exception('', '', array(), $e); // CANNOT_COPY_FILES
 		}
 	}
 
@@ -109,29 +129,13 @@ class local implements adapter_interface
 	 */
 	public function create_dir($path)
 	{
-		if(!mkdir($path, 0777, true))
-		{
-			throw new exception('CANNOT_CREATE_DIRECTORY', $path);
-		}
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function delete_dir($path)
-	{
 		try
 		{
-			$this->symfony_filesystem->remove($path);
+			$this->filesystem->mkdir($path);
 		}
-		catch (\Symfony\Component\Filesystem\Exception\IOException $e)
+		catch (filesystem_exception $e)
 		{
-			// Try to recover filename
-			// By the time this is written that is at the end of the message
-			$error = trim($e->getMessage());
-			$file = substr($error, strrpos($error, ' '));
-
-			throw new exception('CANNOT_REMOVE_DIRECTORY', $file, array(), $e);
+			throw new exception('', $path, array(), $e); // CANNOT_CREATE_DIRECTORY
 		}
 	}
 
