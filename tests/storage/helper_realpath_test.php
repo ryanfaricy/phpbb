@@ -20,7 +20,7 @@ class phpbb_storage_helper_realpath_test extends phpbb_test_case
 		parent::setUpBeforeClass();
 
 		self::$storage_helper_own_realpath = new ReflectionMethod('\phpbb\storage\helper', 'phpbb_own_realpath');
-		self::$storage_helper_own_realpath->setAccesible(true);
+		self::$storage_helper_own_realpath->setAccessible(true);
 	}
 
 	public function setUp()
