@@ -33,7 +33,7 @@ class phpbb_storage_helper_realpath_test extends phpbb_test_case
 		return array(
 			// Constant data
 			array(__DIR__, __DIR__),
-			array(__DIR__ . '/../filesystem/../filesystem', __DIR__),
+			array(__DIR__ . '/../storage/../storage', __DIR__),
 			array(__DIR__ . '/././', __DIR__),
 			array(__DIR__ . '/non_existent', false),
 
@@ -53,10 +53,10 @@ class phpbb_storage_helper_realpath_test extends phpbb_test_case
 
 		return array(
 			array($relative_path, __DIR__),
-			array($relative_path . '../filesystem/../filesystem', __DIR__),
+			array($relative_path . '../storage/../storage', __DIR__),
 			array($relative_path . '././', __DIR__),
 
-			array($relative_path . 'realpath_test.php', __FILE__),
+			array($relative_path . 'helper_realpath_test.php', __FILE__),
 		);
 	}
 
@@ -65,8 +65,7 @@ class phpbb_storage_helper_realpath_test extends phpbb_test_case
 	 */
 	public function test_realpath_absolute_without_links($path, $expected)
 	{
-		//$this->assertEquals($expected, self::$storage_helper_phpbb_own_realpath->invoke(null, $path));
-		$this->assertEquals($expected, realpath($path));
+		$this->assertEquals($expected, self::$storage_helper_phpbb_own_realpath->invoke(null, $path));
 	}
 
 	/**
@@ -79,7 +78,6 @@ class phpbb_storage_helper_realpath_test extends phpbb_test_case
 			$this->markTestSkipped('phpbb_own_realpath() cannot be tested with relative paths: getcwd is not available.');
 		}
 
-		//$this->assertEquals($expected, self::$storage_helper_phpbb_own_realpath->invoke(null, $path));
-		$this->assertEquals($expected, realpath($path));
+		$this->assertEquals($expected, self::$storage_helper_phpbb_own_realpath->invoke(null, $path));
 	}
 }
