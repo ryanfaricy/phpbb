@@ -11,7 +11,7 @@
 *
 */
 
-class phpbb_storage_clean_path_test extends phpbb_test_case
+class phpbb_storage_helper_clean_path_test extends phpbb_test_case
 {
 
 	public function setUp()
