@@ -44,11 +44,11 @@
 	public function test_exists()
 	{
 		// Exists with files
-		$this->assertTrue($this->adapter->exists('phpBB/app.php'));
-		$this->assertFalse($this->adapter->exists('phpBB/phpbb/abc.php'));
+		$this->assertTrue($this->adapter->exists(__DIR__.'/local_test.php'));
+		$this->assertFalse($this->adapter->exists(__DIR__.'/nonexistent_file.php'));
 		// exists with directory
-		$this->assertTrue($this->adapter->exists('phpBB/phpbb'));
-		$this->assertFalse($this->adapter->exists('abc/def/ghi'));
+		$this->assertTrue($this->adapter->exists(__DIR__.'/../adapter'));
+		$this->assertFalse($this->adapter->exists(__DIR__.'/../nonexistet_folder'));
 	}
 
 	public function test_delete()
