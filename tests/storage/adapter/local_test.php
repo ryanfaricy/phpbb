@@ -18,7 +18,6 @@
 	public function setUp()
  	{
  		parent::setUp();
-
 		$this->adapter = new \phpbb\storage\adapter\local();
  	}
 
@@ -45,11 +44,11 @@
 	public function test_exists()
 	{
 		// Exists with files
-		$this->assertTrue($this->adapter->exists('local_test.php'));
-		$this->assertFalse($this->adapter->exists('local_test2.php'));
+		$this->assertTrue($this->adapter->exists('phpBB/app.php'));
+		$this->assertFalse($this->adapter->exists('phpBB/phpbb/abc.php'));
 		// exists with directory
-		$this->assertTrue($this->adapter->exists('../adapter'));
-		$this->assertFalse($this->adapter->exists('../adapter2'));
+		$this->assertTrue($this->adapter->exists('phpBB/phpbb'));
+		$this->assertFalse($this->adapter->exists('abc/def/ghi'));
 	}
 
 	public function test_delete()
