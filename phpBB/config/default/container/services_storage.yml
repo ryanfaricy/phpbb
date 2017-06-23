@@ -1,0 +1,7 @@
+services:
+    storage.adapter.local:
+        class: phpbb\storage\adapter\local
+    storage.avatar:
+        class: phpbb\storage\storage
+        arguments:
+             - '@storage.adapter.local'

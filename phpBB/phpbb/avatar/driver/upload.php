@@ -40,17 +40,19 @@ class upload extends \phpbb\avatar\driver\driver
 	* @param string $phpbb_root_path Path to the phpBB root
 	* @param string $php_ext PHP file extension
 	* @param \phpbb\filesystem\filesystem_interface $filesystem phpBB filesystem helper
+	* @param \phpbb\storage\storage $storage phpBB avatar storage
 	* @param \phpbb\path_helper $path_helper phpBB path helper
 	* @param \phpbb\event\dispatcher_interface $dispatcher phpBB Event dispatcher object
 	* @param \phpbb\files\factory $files_factory File classes factory
 	* @param \phpbb\cache\driver\driver_interface $cache Cache driver
 	*/
-	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
+	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\storage\storage $storage, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
 	{
 		$this->config = $config;
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
 		$this->filesystem = $filesystem;
+		$this->storage = $storage;
 		$this->path_helper = $path_helper;
 		$this->dispatcher = $dispatcher;
 		$this->files_factory = $files_factory;
@@ -232,6 +234,12 @@ class upload extends \phpbb\avatar\driver\driver
 			$this->delete($row);
 		}
 
+		// Move to storage and remove from filesystem
+		$stream = fopen($destination, 'r+');
+		$this->storage->write_stream($destination, $stream);
+		fclose($stream);
+		$this->storage->delete($destination);
+
 		return array(
 			'avatar' => $row['id'] . '_' . time() . '.' . $file->get('extension'),
 			'avatar_width' => $file->get('width'),
@@ -285,10 +293,10 @@ class upload extends \phpbb\avatar\driver\driver
 		{
 			try
 			{
-				$this->filesystem->remove($filename);
+				$this->storage->delete($filename);
 				return true;
 			}
-			catch (\phpbb\filesystem\exception\filesystem_exception $e)
+			catch (\phpbb\storage\exception\exception $e)
 			{
 				// Fail is covered by return statement below
 			}

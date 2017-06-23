@@ -19,9 +19,9 @@ class storage
 {
 	protected $adapter;
 
-	public function __construct()
+	public function __construct($adapter)
 	{
-		$this->adapter = new adapter\local();
+		$this->adapter = $adapter;
 	}
 
 	public function put_contents($path, $content)
