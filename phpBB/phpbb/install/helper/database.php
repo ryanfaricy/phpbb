@@ -21,6 +21,11 @@ use phpbb\install\exception\invalid_dbms_exception;
 class database
 {
 	/**
+	 * @var \phpbb\filesystem\filesystem_interface
+	 */
+	protected $filesystem;
+
+	/**
 	 * @var string
 	 */
 	protected $phpbb_root_path;
@@ -99,10 +104,12 @@ class database
 	/**
 	 * Constructor
 	 *
+	 * @param \phpbb\filesystem\filesystem_interface	$filesystem			Filesystem interface
 	 * @param string									$phpbb_root_path	Path to phpBB's root
 	 */
-	public function __construct($phpbb_root_path)
+	public function __construct(\phpbb\filesystem\filesystem_interface $filesystem, $phpbb_root_path)
 	{
+		$this->filesystem		= $filesystem;
 		$this->phpbb_root_path	= $phpbb_root_path;
 	}
 

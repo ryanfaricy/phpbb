@@ -14,100 +14,134 @@
 namespace phpbb\storage\adapter;
 
 use phpbb\storage\exception\exception;
+use phpbb\filesystem\filesystem_exception;
 
 class local implements adapter_interface
 {
+	/**
+	 * Filesystem component
+	 *
+	 * @var \phpbb\filesystem\filesystem
+	 */
 	protected $filesystem;
 
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 		$this->filesystem = new \phpbb\filesystem\filesystem();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function put_contents($path, $content)
 	{
+		if ($this->exists($path))
+		{
+			throw new exception('', $path); // FILE_EXISTS
+		}
+
 		try
 		{
-			if ($this->exists($path))
-			{
-				throw new exception('CANNOT_OPEN_FILE', $path);
-			}
-
 			$this->filesystem->dump_file($path, $content);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_DUMP_FILE', $path, array(), $e);
+			throw new exception('', $path, array(), $e); // CANNOT_DUMP_FILE
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function get_contents($path)
 	{
-		$stream = $this->read_stream($path);
-		$contents = stream_get_contents($stream);
-		fclose($stream);
+		if (!$this->exists($path))
+		{
+			throw new exception('', $path); // FILE_DONT_EXIST
+		}
 
-		return $stream;
+		if (($content = @file_get_contents($path)) === false)
+		{
+			throw new exception('', $path); // CANNOT READ FILE
+		}
+
+		return $content;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function exists($path)
 	{
 		return $this->filesystem->exists($path);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function delete($path)
 	{
 		try
 		{
 			$this->filesystem->remove($path);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_DELETE_FILES', $path, array(), $e);
+			throw new exception('', $path, array(), $e); // CANNOT DELETE
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function rename($path_orig, $path_dest)
 	{
 		try
 		{
 			$this->filesystem->rename($path_orig, $path_dest, false);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_RENAME_FILE', $path_orig, array(), $e);
+			throw new exception('', $path_orig, array(), $e); // CANNOT_RENAME
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function copy($path_orig, $path_dest)
 	{
 		try
 		{
 			$this->filesystem->copy($path_orig, $path_dest, false);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_COPY_FILES', '', array(), $e);
+			throw new exception('', '', array(), $e); // CANNOT_COPY_FILES
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function create_dir($path)
 	{
 		try
 		{
-			$this->filesystem->mkdir($path, 0777);
+			$this->filesystem->mkdir($path);
 		}
-		catch (\phpbb\filesystem\filesystem_exception $e)
+		catch (filesystem_exception $e)
 		{
-			throw new exception('CANNOT_CREATE_DIRECTORY', $path, array(), $e);
+			throw new exception('', $path, array(), $e); // CANNOT_CREATE_DIRECTORY
 		}
 	}
 
-	public function delete_dir($path)
-	{
-		$this->delete($path);
-	}
-
+	/**
+	 * {@inheritdoc}
+	 */
 	public function read_stream($path)
 	{
 		$stream = @fopen($path, 'rb');
@@ -120,6 +154,9 @@ class local implements adapter_interface
 		return $stream;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function write_stream($path, $resource)
 	{
 		if ($this->exists($path))
