@@ -66,7 +66,6 @@ class helper
 	 */
 	protected static function phpbb_own_realpath($path)
 	{
-		$working_directory = getcwd();
 
 		// Replace all directory separators with '/'
 		$path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
@@ -80,47 +79,43 @@ class helper
 		}
 		else
 		{
-			// Resolve working directory and store it
-			if (is_null($working_directory))
+			if (function_exists('getcwd'))
 			{
-				if (function_exists('getcwd'))
-				{
-					$working_directory = str_replace(DIRECTORY_SEPARATOR, '/', getcwd());
-				}
+				$working_directory = str_replace(DIRECTORY_SEPARATOR, '/', getcwd());
+			}
 
+			//
+			// From this point on we really just guessing
+			// If chdir were called we screwed
+			//
+			else if (function_exists('debug_backtrace'))
+			{
+				$call_stack = debug_backtrace(0);
+				$working_directory = str_replace(DIRECTORY_SEPARATOR, '/', dirname($call_stack[sizeof($call_stack) - 1]['file']));
+			}
+			else
+			{
 				//
-				// From this point on we really just guessing
-				// If chdir were called we screwed
+				// Assuming that the working directory is phpBB root
+				// we could use this as a fallback, when phpBB will use controllers
+				// everywhere this will be a safe assumption
 				//
-				else if (function_exists('debug_backtrace'))
-				{
-					$call_stack = debug_backtrace(0);
-					$working_directory = str_replace(DIRECTORY_SEPARATOR, '/', dirname($call_stack[sizeof($call_stack) - 1]['file']));
-				}
-				else
-				{
-					//
-					// Assuming that the working directory is phpBB root
-					// we could use this as a fallback, when phpBB will use controllers
-					// everywhere this will be a safe assumption
-					//
-					//$dir_parts = explode(DIRECTORY_SEPARATOR, __DIR__);
-					//$namespace_parts = explode('\\', trim(__NAMESPACE__, '\\'));
+				//$dir_parts = explode(DIRECTORY_SEPARATOR, __DIR__);
+				//$namespace_parts = explode('\\', trim(__NAMESPACE__, '\\'));
 
-					//$namespace_part_count = sizeof($namespace_parts);
+				//$namespace_part_count = sizeof($namespace_parts);
 
-					// Check if we still loading from root
-					//if (array_slice($dir_parts, -$namespace_part_count) === $namespace_parts)
-					//{
-					//	$working_directory = implode('/', array_slice($dir_parts, 0, -$namespace_part_count));
-					//}
-					//else
-					//{
-					//	$working_directory = false;
-					//}
+				// Check if we still loading from root
+				//if (array_slice($dir_parts, -$namespace_part_count) === $namespace_parts)
+				//{
+				//	$working_directory = implode('/', array_slice($dir_parts, 0, -$namespace_part_count));
+				//}
+				//else
+				//{
+				//	$working_directory = false;
+				//}
 
-					$working_directory = false;
-				}
+				$working_directory = false;
 			}
 
 			if ($working_directory !== false)
