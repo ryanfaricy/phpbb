@@ -1,7 +1,11 @@
 services:
-    storage.adapter.local:
+    storage.adapter.avatar:
         class: phpbb\storage\adapter\local
     storage.avatar:
         class: phpbb\storage\storage
         arguments:
-             - '@storage.adapter.local'
+             - '@storage.adapter.avatar'
+    storage.controller:
+        class: phpbb\storage\controller
+        arguments:
+            - '@service_container'
