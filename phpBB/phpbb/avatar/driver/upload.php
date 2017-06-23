@@ -235,9 +235,7 @@ class upload extends \phpbb\avatar\driver\driver
 		}
 
 		// Move to storage and remove from filesystem
-		$stream = fopen($destination, 'r+');
-		$this->storage->write_stream($destination, $stream);
-		fclose($stream);
+		$this->storage->put_contents($destination, file_get_contents($destination));
 		$this->storage->delete($destination);
 
 		return array(
