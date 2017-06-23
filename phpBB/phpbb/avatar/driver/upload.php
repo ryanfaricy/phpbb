@@ -24,6 +24,11 @@ class upload extends \phpbb\avatar\driver\driver
 	protected $filesystem;
 
 	/**
+	 * @var \phpbb\storage\storage
+	 */
+	protected $storage;
+
+	/**
 	* @var \phpbb\event\dispatcher_interface
 	*/
 	protected $dispatcher;
