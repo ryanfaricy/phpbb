@@ -19,7 +19,7 @@ use phpbb\language\language;
  * Responsible for holding all file relevant information, as well as doing file-specific operations.
  * The {@link fileupload fileupload class} can be used to upload several files, each of them being this object to operate further on.
  */
-class filespec
+class filespec_storage
 {
 	/** @var string File name */
 	protected $filename = '';
@@ -295,11 +295,11 @@ class filespec
 	/**
 	 * Remove file
 	 */
-	public function remove()
+	public function remove($storage)
 	{
 		if ($this->file_moved)
 		{
-			$this->storage->delete($this->destination_file);
+			$storage->delete($this->destination_file);
 		}
 	}
 

@@ -53,7 +53,7 @@ class upload extends \phpbb\avatar\driver\driver
 		$this->storage = $storage;
 		$this->path_helper = $path_helper;
 		$this->dispatcher = $dispatcher;
-		$this->files_storage_factory = $files_storage_factory;
+		$this->files_factory = $files_factory;
 		$this->cache = $cache;
 	}
 
@@ -159,7 +159,7 @@ class upload extends \phpbb\avatar\driver\driver
 		// If there was an error during upload, then abort operation
 		if (sizeof($file->error))
 		{
-			$file->remove();
+			$file->remove($this->storage);
 			$error = $file->error;
 			return false;
 		}
@@ -214,14 +214,14 @@ class upload extends \phpbb\avatar\driver\driver
 		if (!sizeof($error))
 		{
 			// Move file and overwrite any existing image
-			$file->move_file($storage, $destination, true);
+			$file->move_file($this->storage, $destination, true);
 		}
 
 		// If there was an error during move, then clean up leftovers
 		$error = array_merge($error, $file->error);
 		if (sizeof($error))
 		{
-			$file->storage_remove();
+			$file->remove($this->storage);
 			return false;
 		}
 

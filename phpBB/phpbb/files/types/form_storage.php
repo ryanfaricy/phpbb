@@ -20,7 +20,7 @@ use phpbb\language\language;
 use phpbb\plupload\plupload;
 use phpbb\request\request_interface;
 
-class form extends base
+class form_storage extends base
 {
 	/** @var factory Files factory */
 	protected $factory;

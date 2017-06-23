@@ -26,7 +26,7 @@ class storage
 
 	public function put_contents($path, $content)
 	{
-		$this->adapter->put_contents($path, $contents);
+		$this->adapter->put_contents($path, $content);
 	}
 
 	public function get_contents($path)
@@ -36,7 +36,7 @@ class storage
 
 	public function exists($path)
 	{
-		$this->adapter->exists($path);
+		return $this->adapter->exists($path);
 	}
 
 	public function delete($path)
@@ -62,20 +62,5 @@ class storage
 	public function delete_dir($path)
 	{
 		$this->adapter->delete_dir($path);
-	}
-
-	public function read_stream($path)
-	{
-		$this->adapter->read_stream($path);
-	}
-
-	public function write_stream($path, $resource)
-	{
-		if (!is_resource($resource))
-		{
-			throw new exception('INVALID_RESOURCE');
-		}
-
-		$this->adapter->write_stream($path, $resource);
 	}
 }
