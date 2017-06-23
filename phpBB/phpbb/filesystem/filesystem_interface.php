@@ -134,7 +134,7 @@ interface filesystem_interface
 	/**
 	 * Checks if a path is absolute or not
 	 *
- 	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
+	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
 	 *
 	 * @param string	$path	Path to check
 	 *
@@ -234,7 +234,7 @@ interface filesystem_interface
 	/**
 	 * A wrapper for PHP's realpath
 	 *
- 	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
+	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
 	 *
 	 * Try to resolve realpath when PHP's realpath is not available, or
 	 * known to be buggy.
