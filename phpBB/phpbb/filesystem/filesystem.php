@@ -620,7 +620,7 @@ class filesystem implements filesystem_interface
 	/**
 	 * Try to resolve real path when PHP's realpath failes to do so
 	 *
- 	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
+	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
 	 *
 	 * @param string	$path
 	 * @return bool|string
@@ -747,7 +747,7 @@ class filesystem implements filesystem_interface
 	/**
 	 * Try to resolve symlinks in path
 	 *
- 	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
+	 * @deprecated 3.3.0-a1 (To be removed: 4.0.0)
 	 *
 	 * @param string	$path			The path to resolve
 	 * @param string	$prefix			The path prefix (on windows the drive letter)
