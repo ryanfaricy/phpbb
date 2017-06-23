@@ -19,11 +19,6 @@ namespace phpbb\avatar\driver;
 class upload extends \phpbb\avatar\driver\driver
 {
 	/**
-	 * @var \phpbb\filesystem\filesystem_interface
-	 */
-	protected $filesystem;
-
-	/**
 	 * @var \phpbb\storage\storage
 	 */
 	protected $storage;
@@ -44,23 +39,21 @@ class upload extends \phpbb\avatar\driver\driver
 	* @param \phpbb\config\config $config phpBB configuration
 	* @param string $phpbb_root_path Path to the phpBB root
 	* @param string $php_ext PHP file extension
-	* @param \phpbb\filesystem\filesystem_interface $filesystem phpBB filesystem helper
 	* @param \phpbb\storage\storage $storage phpBB avatar storage
 	* @param \phpbb\path_helper $path_helper phpBB path helper
 	* @param \phpbb\event\dispatcher_interface $dispatcher phpBB Event dispatcher object
 	* @param \phpbb\files\factory $files_factory File classes factory
 	* @param \phpbb\cache\driver\driver_interface $cache Cache driver
 	*/
-	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\filesystem\filesystem_interface $filesystem, \phpbb\storage\storage $storage, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
+	public function __construct(\phpbb\config\config $config, $phpbb_root_path, $php_ext, \phpbb\storage\storage $storage, \phpbb\path_helper $path_helper, \phpbb\event\dispatcher_interface $dispatcher, \phpbb\files\factory $files_factory, \phpbb\cache\driver\driver_interface $cache = null)
 	{
 		$this->config = $config;
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
-		$this->filesystem = $filesystem;
 		$this->storage = $storage;
 		$this->path_helper = $path_helper;
 		$this->dispatcher = $dispatcher;
-		$this->files_factory = $files_factory;
+		$this->files_storage_factory = $files_storage_factory;
 		$this->cache = $cache;
 	}
 
@@ -123,7 +116,7 @@ class upload extends \phpbb\avatar\driver\driver
 
 		if (!empty($upload_file['name']))
 		{
-			$file = $upload->handle_upload('files.types.form', 'avatar_upload_file');
+			$file = $upload->handle_upload('files.types.form_storage', 'avatar_upload_file');
 		}
 		else if (!empty($this->config['allow_avatar_remote_upload']) && !empty($url))
 		{
@@ -221,14 +214,14 @@ class upload extends \phpbb\avatar\driver\driver
 		if (!sizeof($error))
 		{
 			// Move file and overwrite any existing image
-			$file->move_file($destination, true);
+			$file->move_file($storage, $destination, true);
 		}
 
 		// If there was an error during move, then clean up leftovers
 		$error = array_merge($error, $file->error);
 		if (sizeof($error))
 		{
-			$file->remove();
+			$file->storage_remove();
 			return false;
 		}
 
@@ -238,10 +231,6 @@ class upload extends \phpbb\avatar\driver\driver
 		{
 			$this->delete($row);
 		}
-
-		// Move to storage and remove from filesystem
-		$this->storage->put_contents($destination, file_get_contents($destination));
-		$this->storage->delete($destination);
 
 		return array(
 			'avatar' => $row['id'] . '_' . time() . '.' . $file->get('extension'),
@@ -272,7 +261,7 @@ class upload extends \phpbb\avatar\driver\driver
 		$destination = $this->config['avatar_path'];
 		$prefix = $this->config['avatar_salt'] . '_';
 		$ext = substr(strrchr($row['avatar'], '.'), 1);
-		$filename = $this->phpbb_root_path . $destination . '/' . $prefix . $row['id'] . '.' . $ext;
+		$filename = $destination . '/' . $prefix . $row['id'] . '.' . $ext;
 
 		/**
 		* Before deleting an existing avatar
@@ -292,7 +281,7 @@ class upload extends \phpbb\avatar\driver\driver
 		);
 		extract($this->dispatcher->trigger_event('core.avatar_driver_upload_delete_before', compact($vars)));
 
-		if (!sizeof($error) && $this->filesystem->exists($filename))
+		if (!sizeof($error) && $this->storage->exists($filename))
 		{
 			try
 			{
@@ -317,12 +306,12 @@ class upload extends \phpbb\avatar\driver\driver
 	}
 
 	/**
-	* Check if user is able to upload an avatar
+	* Check if user is able to upload an avatar to a temporary folder
 	*
 	* @return bool True if user can upload, false if not
 	*/
 	protected function can_upload()
 	{
-		return ($this->filesystem->exists($this->phpbb_root_path . $this->config['avatar_path']) && $this->filesystem->is_writable($this->phpbb_root_path . $this->config['avatar_path']) && (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on'));
+		return (@ini_get('file_uploads') || strtolower(@ini_get('file_uploads')) == 'on');
 	}
 }
