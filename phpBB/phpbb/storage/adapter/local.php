@@ -43,11 +43,12 @@ class local implements adapter_interface
 
 	public function get_contents($path)
 	{
-		$stream = $this->read_stream($path);
-		$contents = stream_get_contents($stream);
-		fclose($stream);
+		if (($content = @file_get_contents($path)) === false)
+		{
+			throw new exception('', $path); // CANNOT READ FILE
+		}
 
-		return $stream;
+		return $content;
 	}
 
 	public function exists($path)
