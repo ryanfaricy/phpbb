@@ -63,7 +63,7 @@ class local implements adapter_interface
 			throw new exception('', $path); // FILE_DONT_EXIST
 		}
 
-		if (($content = @file_get_contents($path)) === FALSE)
+		if (($content = @file_get_contents($path)) === false)
 		{
 			throw new exception('', $path); // CANNOT READ FILE
 		}
