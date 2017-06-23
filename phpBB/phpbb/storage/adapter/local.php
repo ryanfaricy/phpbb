@@ -107,33 +107,4 @@ class local implements adapter_interface
 	{
 		$this->delete($path);
 	}
-
-	public function read_stream($path)
-	{
-		$stream = @fopen($path, 'rb');
-
-		if (!$stream)
-		{
-			throw new exception('CANNOT_OPEN_FILE', $path);
-		}
-
-		return $stream;
-	}
-
-	public function write_stream($path, $resource)
-	{
-		if ($this->exists($path))
-		{
-			throw new exception('CANNOT_OPEN_FILE', $path);
-		}
-
-		$stream = @fopen($path, 'w+b');
-
-		if (!$stream)
-		{
-			throw new exception('CANNOT_OPEN_FILE', $path);
-		}
-
-		stream_copy_to_stream($resource, $stream);
-	}
 }

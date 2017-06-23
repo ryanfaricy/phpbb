@@ -10,7 +10,7 @@
  * the docs/CREDITS.txt file.
  *
  */
- 
+
 namespace phpbb\storage\adapter;
 
 interface adapter_interface
@@ -23,6 +23,4 @@ interface adapter_interface
 	public function copy($path_orig, $path_dest);
 	public function create_dir($path);
 	public function delete_dir($path);
-	public function read_stream($path);
-	public function write_stream($path, $resource);
 }
