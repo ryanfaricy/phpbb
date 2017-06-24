@@ -77,3 +77,14 @@ services:
             - '@php_ini'
             - '@request'
             - '%core.root_path%'
+
+    files.types.remote_storage:
+        class: phpbb\files\types\remote_storage
+        shared: false
+        arguments:
+            - '@config'
+            - '@files.factory'
+            - '@language'
+            - '@php_ini'
+            - '@request'
+            - '%core.root_path%'
