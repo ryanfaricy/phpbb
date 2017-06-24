@@ -25,12 +25,16 @@ class local implements adapter_interface
 	 */
 	protected $filesystem;
 
+	/** @var string phpBB root path */
+	protected $phpbb_root_path;
+
 	/**
 	 * Constructor
 	 */
-	public function __construct()
+	public function __construct($filesystem, $phpbb_root_path)
 	{
-		$this->filesystem = new \phpbb\filesystem\filesystem();
+		$this->filesystem = $filesystem;
+		$this->phpbb_root_path = $phpbb_root_path;
 	}
 
 	/**
@@ -38,14 +42,14 @@ class local implements adapter_interface
 	 */
 	public function put_contents($path, $content)
 	{
-		if ($this->exists($path))
+		if ($this->exists($this->phpbb_root_path.$path))
 		{
 			throw new exception('', $path); // FILE_EXISTS
 		}
 
 		try
 		{
-			$this->filesystem->dump_file($path, $content);
+			$this->filesystem->dump_file($this->phpbb_root_path.$path, $content);
 		}
 		catch (filesystem_exception $e)
 		{
@@ -58,12 +62,12 @@ class local implements adapter_interface
 	 */
 	public function get_contents($path)
 	{
-		if (!$this->exists($path))
+		if (!$this->exists($this->phpbb_root_path.$path))
 		{
 			throw new exception('', $path); // FILE_DONT_EXIST
 		}
-    
-		if (($content = @file_get_contents($path)) === false)
+
+		if (($content = @file_get_contents($this->phpbb_root_path.$path)) === false)
 		{
 			throw new exception('', $path); // CANNOT READ FILE
 		}
@@ -76,7 +80,7 @@ class local implements adapter_interface
 	 */
 	public function exists($path)
 	{
-		return $this->filesystem->exists($path);
+		return $this->filesystem->exists($this->phpbb_root_path.$path);
 	}
 
 	/**
@@ -86,7 +90,7 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->filesystem->remove($path);
+			$this->filesystem->remove($this->phpbb_root_path.$path);
 		}
 		catch (filesystem_exception $e)
 		{
@@ -101,7 +105,7 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->filesystem->rename($path_orig, $path_dest, false);
+			$this->filesystem->rename($this->phpbb_root_path.$path_orig, $this->phpbb_root_path.$path_dest, false);
 		}
 		catch (filesystem_exception $e)
 		{
@@ -116,7 +120,7 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->filesystem->copy($path_orig, $path_dest, false);
+			$this->filesystem->copy($this->phpbb_root_path.$path_orig, $this->phpbb_root_path.$path_dest, false);
 		}
 		catch (filesystem_exception $e)
 		{
@@ -131,12 +135,12 @@ class local implements adapter_interface
 	{
 		try
 		{
-			$this->filesystem->mkdir($path);
+			$this->filesystem->mkdir($this->phpbb_root_path.$path);
 		}
 		catch (filesystem_exception $e)
 		{
 			throw new exception('', $path, array(), $e); // CANNOT_CREATE_DIRECTORY
 		}
 	}
-  
+
 }
