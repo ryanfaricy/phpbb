@@ -83,14 +83,4 @@
 		unlink('file.txt');
 		unlink('file2.txt');
 	}
-
-	public function test_read_stream()
-	{
-
-	}
-
-	public function test_write_stream()
-	{
-
-	}
  }
