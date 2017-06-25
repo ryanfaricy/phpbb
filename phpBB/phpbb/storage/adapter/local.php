@@ -45,7 +45,12 @@ class local implements adapter_interface
 	public function __construct(filesystem $filesystem, $phpbb_root_path)
 	{
 		$this->filesystem = $filesystem;
-		$this->phpbb_root_path = $phpbb_root_path;
+		$this->root_path = $root_path.$config[$path_key];
+
+		if(substr($this->root_path, -1, 1) != DIRECTORY_SEPARATOR)
+		{
+			$this->root_path = $this->root_path.DIRECTORY_SEPARATOR;
+		}
 	}
 
 	/**
