@@ -392,31 +392,20 @@ class filespec_storage
 	 * Move file to destination folder
 	 * The phpbb_root_path variable will be applied to the destination path
 	 *
-	 * @param string $destination Destination path, for example $config['avatar_path']
 	 * @param bool $overwrite If set to true, an already existing file will be overwritten
 	 * @param bool $skip_image_check If set to true, the check for the file to be a valid image is skipped
 	 *
 	 * @return bool True if file was moved, false if not
 	 * @access public
 	 */
-	public function move_file($storage, $destination, $overwrite = false, $skip_image_check = false)
+	public function move_file($storage, $overwrite = false, $skip_image_check = false)
 	{
 		if (sizeof($this->error))
 		{
 			return false;
 		}
 
-		// We need to trust the admin in specifying valid upload directories and an attacker not being able to overwrite it...
-		$this->destination_path = $destination;
-
-		// Check if the destination path exist...
-		if (!$storage->exists($this->destination_path))
-		{
-			@unlink($this->filename);
-			return false;
-		}
-
-		$this->destination_file = $this->destination_path . '/' . utf8_basename($this->realname);
+		$this->destination_file = utf8_basename($this->realname);
 
 		// Try to get real filesize from destination folder
 		$this->filesize = ($this->get_filesize($this->filename)) ?: $this->filesize;

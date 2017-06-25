@@ -167,18 +167,6 @@ class upload extends \phpbb\avatar\driver\driver
 		// Calculate new destination
 		$destination = $this->config['avatar_path'];
 
-		// Adjust destination path (no trailing slash)
-		if (substr($destination, -1, 1) == '/' || substr($destination, -1, 1) == '\\')
-		{
-			$destination = substr($destination, 0, -1);
-		}
-
-		$destination = str_replace(array('../', '..\\', './', '.\\'), '', $destination);
-		if ($destination && ($destination[0] == '/' || $destination[0] == "\\"))
-		{
-			$destination = '';
-		}
-
 		$filedata = array(
 			'filename'			=> $file->get('filename'),
 			'filesize'			=> $file->get('filesize'),
@@ -193,7 +181,6 @@ class upload extends \phpbb\avatar\driver\driver
 		*
 		* @event core.avatar_driver_upload_move_file_before
 		* @var	array	filedata			Array containing uploaded file data
-		* @var	string	destination			Destination directory where the file is going to be moved
 		* @var	string	prefix				Prefix for the avatar filename
 		* @var	array	row					Array with avatar row data
 		* @var	array	error				Array of errors, if filled in by this event file will not be moved
@@ -202,7 +189,6 @@ class upload extends \phpbb\avatar\driver\driver
 		*/
 		$vars = array(
 			'filedata',
-			'destination',
 			'prefix',
 			'row',
 			'error',
@@ -214,7 +200,7 @@ class upload extends \phpbb\avatar\driver\driver
 		if (!sizeof($error))
 		{
 			// Move file and overwrite any existing image
-			$file->move_file($this->storage, $destination, true);
+			$file->move_file($this->storage, true);
 		}
 
 		// If there was an error during move, then clean up leftovers
