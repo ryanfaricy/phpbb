@@ -39,6 +39,14 @@
 		yield [$this->path . 'nonexistent/folder', false];
 	}
 
+	public function data_test_exists()
+	{
+		yield ['README.md', true];
+		yield ['nonexistent_file.php', false];
+		yield ['phpBB/phpbb', true];
+		yield ['nonexistent/folder', false];
+	}
+
 	public function tearDown()
 	{
 		$this->adapter = null;
