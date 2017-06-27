@@ -17,6 +17,12 @@ use Symfony\Component\Filesystem\Filesystem as symfony_filesystem;
 
 class helper
 {
+
+	/**
+	* @var \Symfony\Component\Filesystem\Filesystem
+	*/
+	protected static $symfony_filesystem;
+
 	/**
 	* @var \Symfony\Component\Filesystem\Filesystem
 	*/
@@ -366,6 +372,21 @@ class helper
 		}
 
 		return $return_array ? $resolved : $resolved_path;
+	}
+
+	/**
+	 * Get an instance of symfony's filesystem object.
+	 *
+	 * @return \Symfony\Component\Filesystem\Filesystem	Symfony filesystem
+	 */
+	protected static function get_symfony_filesystem()
+	{
+		if (self::$symfony_filesystem === null)
+		{
+			self::$symfony_filesystem = new symfony_filesystem();
+		}
+
+		return self::$symfony_filesystem;
 	}
 
 	/**
