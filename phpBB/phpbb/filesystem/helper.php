@@ -17,7 +17,6 @@ use Symfony\Component\Filesystem\Filesystem as symfony_filesystem;
 
 class helper
 {
-
 	/**
 	* @var \Symfony\Component\Filesystem\Filesystem
 	*/
