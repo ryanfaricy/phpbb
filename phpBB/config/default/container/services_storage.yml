@@ -1,15 +1,30 @@
 services:
-    storage.adapter.avatar:
+    storage.adapter.local.attachment:
+        class: phpbb\storage\adapter\local
+        arguments:
+            - '@config'
+            - '@filesystem'
+            - '%core.root_path%'
+            - 'upload_path'
+
+    storage.adapter.local.avatar:
         class: phpbb\storage\adapter\local
         arguments:
             - '@config'
             - '@filesystem'
             - '%core.root_path%'
             - 'avatar_path'
+
+    storage.attachment:
+        class: phpbb\storage\storage
+        arguments:
+            - '@storage.adapter.local.attachment'
+
     storage.avatar:
         class: phpbb\storage\storage
         arguments:
-             - '@storage.adapter.avatar'
+             - '@storage.adapter.local.avatar'
+
     storage.controller:
         class: phpbb\storage\controller
         arguments:
