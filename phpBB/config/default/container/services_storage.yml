@@ -1,4 +1,14 @@
 services:
+# ----- Storage controller -----
+    phpbb.storage.controller.file:
+        class: phpbb\storage\controller\file
+        arguments:
+            - '@config'
+            - '@service_container'
+            - '@db'
+            - '%tables.attachments%'
+
+# ----- Storage adapters -----
     storage.adapter.local.attachment:
         class: phpbb\storage\adapter\local
         arguments:
@@ -15,6 +25,7 @@ services:
             - '%core.root_path%'
             - 'avatar_path'
 
+# ----- Storages -----
     storage.attachment:
         class: phpbb\storage\storage
         arguments:
@@ -24,8 +35,3 @@ services:
         class: phpbb\storage\storage
         arguments:
              - '@storage.adapter.local.avatar'
-
-    storage.controller:
-        class: phpbb\storage\controller
-        arguments:
-            - '@service_container'
