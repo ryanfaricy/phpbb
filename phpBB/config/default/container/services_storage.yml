@@ -35,3 +35,44 @@ services:
         class: phpbb\storage\storage
         arguments:
              - '@storage.adapter.local.avatar'
+
+
+
+########################################################################
+
+    storage:
+        class: phpbb\storage\storage
+        arguments:
+            - '@service_container' #service factory?
+
+    storage.adapter.factory:
+        class: phpbb\storage\adapter_factory
+        arguments:
+            - '@config'
+            - '@storage.adapter_collection'
+            - '@storage.provider_collection'
+
+    storage.adapter_collection:
+        class: phpbb\di\service_collection
+        arguments:
+            - '@service_container'
+        tags: { name: service_collection, tag: storage.adapter }
+
+    storage.provider_collection:
+        class: phpbb\di\service_collection
+        arguments:
+            - '@service_container'
+        tags: { name: service_collection, tag: storage.provider }
+
+    #adapters
+    storage.adapter.local:
+        class: phpbb\storage\adapter\local
+        shared: false
+        arguments:
+        tags: { name: storage.adapter }
+
+    #providers
+    storage.provider.local:
+        class: phpbb\storage\provider\local
+        arguments:
+        tags: { name: storage.provider }

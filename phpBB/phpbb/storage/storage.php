@@ -17,7 +17,7 @@ class storage
 {
 	protected $adapter;
 
-	public function __construct($adapter)
+	public function __construct($factory)
 	{
 		$this->adapter = $adapter;
 	}
