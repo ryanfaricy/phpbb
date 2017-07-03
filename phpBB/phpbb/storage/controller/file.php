@@ -133,7 +133,7 @@ class file
 
 		if(!function_exists('download_allowed'))
 		{
-			require('includes/functions_donload.php');
+			require('includes/functions_download.php');
 		}
 
 		return download_allowed();
