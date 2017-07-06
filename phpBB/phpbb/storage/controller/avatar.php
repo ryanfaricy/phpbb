@@ -18,7 +18,7 @@ use phpbb\db\driver\driver_interface;
 use phpbb\exception\http_exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class attachment
+class avatar
 {
 	/**
 	 * @var \phpbb\config\config

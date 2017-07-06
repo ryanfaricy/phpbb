@@ -90,37 +90,6 @@ class service_collection extends \ArrayObject
 	}
 
 	/**
-	* Get service by class name
-	*
-	* @param string	$class
-	* @return service instance
-	* @throws \phpbb\exception\exception When more than one service is found
-	*/
-/*
-	public function get_by_class($class)
-	{
-		$iterator = $this->getIterator();
-		$found = null;
-
-		foreach ($iterator as $service_class)
-		{
-			if($class == get_class($service_class))
-			{
-				if($found == null)
-				{
-					$found = $service_class;
-				}
-				else
-				{
-					throw new \Exception('There are more than one service of the same class.');
-				}
-			}
-		}
-
-		return $found;
-	}
-*/
-	/**
 	 * Returns the service associated to a class
 	 *
 	 * @return mixed
@@ -129,7 +98,6 @@ class service_collection extends \ArrayObject
 	public function get_by_class($class)
 	{
 		$service_id = null;
-//var_dump($this->service_classes); exit;
 		foreach ($this->service_classes as $id => $service_class)
 		{
 			if ($service_class === $class)
@@ -138,16 +106,13 @@ class service_collection extends \ArrayObject
 				{
 					throw new \RuntimeException('Many services found for class "'.$class.'" in collection.');
 				}
-
 				$service_id = $id;
 			}
 		}
-
 		if ($service_id === null)
 		{
 			throw new \RuntimeException('No service found for class "'.$class.'" in collection.');
 		}
-
 		return $this->offsetGet($service_id);
 	}
 }

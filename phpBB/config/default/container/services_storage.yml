@@ -1,24 +1,24 @@
 services:
- Controllers
-    phpbb.storage.controller.avatar:
-        class: phpbb\storage\controller\avatar
-        arguments:
-            - '@config'
-            - '@service_container'
-            - '@db'
-            - '@storage.avatar'
-            - '%tables.attachments%'
+#Controllers
+#    phpbb.storage.controller.avatar:
+#        class: phpbb\storage\controller\avatar
+#        arguments:
+#            - '@config'
+#            - '@service_container'
+#            - '@dbal.conn'
+#            - '@storage.avatar'
+#            - '%tables.attachments%'
 
-    phpbb.storage.controller.attachment:
-        class: phpbb\storage\controller\attachment
-        arguments:
-            - '@config'
-            - '@service_container'
-            - '@db'
-            - '@request'
-            - '@storage.attachment'
-            - '@user'
-            - '%tables.attachments%'
+#    phpbb.storage.controller.attachment:
+#        class: phpbb\storage\controller\attachment
+#        arguments:
+#            - '@config'
+#            - '@service_container'
+#            - '@dbal.conn'
+#            - '@request'
+#            - '@storage.attachment'
+#            - '@user'
+#            - '%tables.attachments%'
 
 # Storages
     storage.avatar:

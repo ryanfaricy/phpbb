@@ -27,13 +27,13 @@ class adapter_factory
 		$this->config = $config;
 		$this->adapters = $adapters;
 		$this->providers = $providers;
-//$this->providers->get_by_class($adapter);
 	}
 
 	public function get($type)
 	{
 		$adapter = $this->config['storage_' . $type];
+		$adapter = 'phpbb\\storage\\adapter\\local';
 
-		return new $this->providers->get_by_class($adapter);
+		return $this->adapters->get_by_class($adapter);
 	}
 }

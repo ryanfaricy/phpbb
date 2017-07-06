@@ -69,8 +69,10 @@ class attachment
 	 * @return \Symfony\Component\HttpFoundation\Response a Symfony response object
 	 * @throws \phpbb\exception\http_exception when $mode or $id is invalid for some reason
 	 */
-	public function handle($id)
+	public function handle($id, $thumbnail = false)
 	{
+		global $cache, $auth;
+
 		$this->sun_check(); // https://github.com/phpbb/phpbb/commit/bf59a749c3346ed7341d03946b8ecd0701af9eb8
 
 		//if(!$this->attachments_enabled())
@@ -99,7 +101,7 @@ class attachment
 		if ($attachment['is_orphan'])
 		{
 			// We allow admins having attachment permissions to see orphan attachments...
-			$own_attachment = ($auth->acl_get('a_attach') || $attachment['poster_id'] == $user->data['user_id']) ? true : false;
+			$own_attachment = ($auth->acl_get('a_attach') || $attachment['poster_id'] == $this->user->data['user_id']) ? true : false;
 
 			if (!$own_attachment || ($attachment['in_message'] && !$auth->acl_get('u_pm_download')) || (!$attachment['in_message'] && !$auth->acl_get('u_download')))
 			{
@@ -113,7 +115,7 @@ class attachment
 		{
 			if (!$attachment['in_message'])
 			{
-				phpbb_download_handle_forum_auth($db, $auth, $attachment['topic_id']);
+				phpbb_download_handle_forum_auth($this->db, $auth, $attachment['topic_id']);
 
 				$sql = 'SELECT forum_id, post_visibility
 					FROM ' . POSTS_TABLE . '
@@ -132,20 +134,68 @@ class attachment
 			{
 				// Attachment is in a private message.
 				$post_row = array('forum_id' => false);
-				phpbb_download_handle_pm_auth($db, $auth, $user->data['user_id'], $attachment['post_msg_id']);
+				phpbb_download_handle_pm_auth($db, $auth, $this->user->data['user_id'], $attachment['post_msg_id']);
 			}
 
 			$extensions = array();
 			if (!extension_allowed($post_row['forum_id'], $attachment['extension'], $extensions))
 			{
-				throw new http_exception(403, sprintf($user->lang['EXTENSION_DISABLED_AFTER_POSTING'], $attachment['extension']));
+				throw new http_exception(403, sprintf($this->user->lang['EXTENSION_DISABLED_AFTER_POSTING'], $attachment['extension']));
 			}
 		}
 
 		$attachment['physical_filename'] = utf8_basename($attachment['physical_filename']); //?
 
-		// ...............
-		// etc, etc
+
+		$download_mode = (int) $extensions[$attachment['extension']]['download_mode'];
+		$display_cat = $extensions[$attachment['extension']]['display_cat'];
+
+		if (($display_cat == ATTACHMENT_CATEGORY_IMAGE || $display_cat == ATTACHMENT_CATEGORY_THUMB) && !$user->optionget('viewimg'))
+		{
+			$display_cat = ATTACHMENT_CATEGORY_NONE;
+		}
+
+		if ($display_cat == ATTACHMENT_CATEGORY_FLASH && !$user->optionget('viewflash'))
+		{
+			$display_cat = ATTACHMENT_CATEGORY_NONE;
+		}
+
+		if ($thumbnail)
+		{
+			$attachment['physical_filename'] = 'thumb_' . $attachment['physical_filename'];
+		}
+		else if ($display_cat == ATTACHMENT_CATEGORY_NONE && !$attachment['is_orphan'] && !phpbb_http_byte_range($attachment['filesize']))
+		{
+			// Update download count
+			phpbb_increment_downloads($db, $attachment['attach_id']);
+		}
+
+		if ($display_cat == ATTACHMENT_CATEGORY_IMAGE && $mode === 'view' && (strpos($attachment['mimetype'], 'image') === 0) && (strpos(strtolower($user->browser), 'msie') !== false) && !phpbb_is_greater_ie_version($user->browser, 7))
+		{
+			wrap_img_in_html(append_sid($phpbb_root_path . 'download/file.' . $phpEx, 'id=' . $attachment['attach_id']), $attachment['real_filename']);
+			file_gc();
+		}
+		else
+		{
+			// Determine the 'presenting'-method
+			if ($download_mode == PHYSICAL_LINK)
+			{
+				// This presenting method should no longer be used
+				if (!@is_dir($phpbb_root_path . $config['upload_path']))
+				{
+					send_status_line(500, 'Internal Server Error');
+					trigger_error($user->lang['PHYSICAL_DOWNLOAD_NOT_POSSIBLE']);
+				}
+
+				redirect($phpbb_root_path . $config['upload_path'] . '/' . $attachment['physical_filename']);
+				file_gc();
+			}
+			else
+			{
+				send_file_to_browser($attachment, $config['upload_path'], $display_cat);
+				file_gc();
+			}
+		}
 
 		$this->storage->get_contents($file); // output file with streams
 	}
@@ -233,7 +283,7 @@ class attachment
 
 		$sql = 'SELECT site_ip, site_hostname, ip_exclude
 			FROM ' . SITELIST_TABLE;
-		$result = $db->sql_query($sql);
+		$result = $this->db->sql_query($sql);
 
 		while ($row = $this->db->fetchrow($result))
 		{
