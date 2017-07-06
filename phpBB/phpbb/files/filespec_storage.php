@@ -69,9 +69,6 @@ class filespec_storage
 	/** @var upload Instance of upload class  */
 	public $upload;
 
-	/** @var \phpbb\filesystem\filesystem_interface */
-	protected $filesystem;
-
 	/** @var \bantu\IniGetWrapper\IniGetWrapper ini_get() wrapper class */
 	protected $php_ini;
 
@@ -80,9 +77,6 @@ class filespec_storage
 
 	/** @var language Language class */
 	protected $language;
-
-	/** @var string phpBB root path */
-	protected $phpbb_root_path;
 
 	/** @var \phpbb\plupload\plupload The plupload object */
 	protected $plupload;
@@ -93,21 +87,17 @@ class filespec_storage
 	/**
 	 * File upload class
 	 *
-	 * @param \phpbb\filesystem\filesystem_interface	$phpbb_filesystem Filesystem
 	 * @param language					$language Language
 	 * @param \bantu\IniGetWrapper\IniGetWrapper			$php_ini ini_get() wrapper
 	 * @param \FastImageSize\FastImageSize $imagesize Imagesize class
-	 * @param string					$phpbb_root_path phpBB root path
 	 * @param \phpbb\mimetype\guesser	$mimetype_guesser Mime type guesser
 	 * @param \phpbb\plupload\plupload	$plupload Plupload
 	 */
-	public function __construct(\phpbb\filesystem\filesystem_interface $phpbb_filesystem, language $language, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \FastImageSize\FastImageSize $imagesize, $phpbb_root_path, \phpbb\mimetype\guesser $mimetype_guesser = null, \phpbb\plupload\plupload $plupload = null)
+	public function __construct(language $language, \bantu\IniGetWrapper\IniGetWrapper $php_ini, \FastImageSize\FastImageSize $imagesize, \phpbb\mimetype\guesser $mimetype_guesser = null, \phpbb\plupload\plupload $plupload = null)
 	{
-		$this->filesystem = $phpbb_filesystem;
 		$this->language = $language;
 		$this->php_ini = $php_ini;
 		$this->imagesize = $imagesize;
-		$this->phpbb_root_path = $phpbb_root_path;
 		$this->plupload = $plupload;
 		$this->mimetype_guesser = $mimetype_guesser;
 	}
@@ -390,7 +380,6 @@ class filespec_storage
 
 	/**
 	 * Move file to destination folder
-	 * The phpbb_root_path variable will be applied to the destination path
 	 *
 	 * @param bool $overwrite If set to true, an already existing file will be overwritten
 	 * @param bool $skip_image_check If set to true, the check for the file to be a valid image is skipped

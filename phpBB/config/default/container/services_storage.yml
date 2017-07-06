@@ -1,50 +1,45 @@
 services:
-# ----- Storage controller -----
-    phpbb.storage.controller.file:
-        class: phpbb\storage\controller\file
+ Controllers
+    phpbb.storage.controller.avatar:
+        class: phpbb\storage\controller\avatar
         arguments:
             - '@config'
             - '@service_container'
             - '@db'
+            - '@storage.avatar'
             - '%tables.attachments%'
 
-# ----- Storage adapters -----
-    storage.adapter.local.attachment:
-        class: phpbb\storage\adapter\local
+    phpbb.storage.controller.attachment:
+        class: phpbb\storage\controller\attachment
         arguments:
             - '@config'
-            - '@filesystem'
-            - '%core.root_path%'
-            - 'upload_path'
+            - '@service_container'
+            - '@db'
+            - '@request'
+            - '@storage.attachment'
+            - '@user'
+            - '%tables.attachments%'
 
-    storage.adapter.local.avatar:
-        class: phpbb\storage\adapter\local
-        arguments:
-            - '@config'
-            - '@filesystem'
-            - '%core.root_path%'
-            - 'avatar_path'
-
-# ----- Storages -----
-    storage.attachment:
-        class: phpbb\storage\storage
-        arguments:
-            - '@storage.adapter.local.attachment'
-
+# Storages
     storage.avatar:
         class: phpbb\storage\storage
         arguments:
-             - '@storage.adapter.local.avatar'
+            - '@storage.adapter.factory'
+            - 'avatar'
 
-
-
-########################################################################
-
-    storage:
+    storage.attachment:
         class: phpbb\storage\storage
         arguments:
-            - '@service_container' #service factory?
+            - '@storage.adapter.factory'
+            - 'attachment'
 
+    storage.backup:
+        class: phpbb\storage\storage
+        arguments:
+            - '@storage.adapter.factory'
+            - 'backup'
+
+# Factory
     storage.adapter.factory:
         class: phpbb\storage\adapter_factory
         arguments:
@@ -52,27 +47,36 @@ services:
             - '@storage.adapter_collection'
             - '@storage.provider_collection'
 
+# Collections
     storage.adapter_collection:
         class: phpbb\di\service_collection
         arguments:
             - '@service_container'
-        tags: { name: service_collection, tag: storage.adapter }
+        tags:
+            - { name: service_collection, tag: storage.adapter, class_name_aware: true }
 
     storage.provider_collection:
         class: phpbb\di\service_collection
         arguments:
             - '@service_container'
-        tags: { name: service_collection, tag: storage.provider }
+        tags:
+            - { name: service_collection, tag: storage.provider, class_name_aware: true }
 
-    #adapters
+# Adapters
     storage.adapter.local:
         class: phpbb\storage\adapter\local
         shared: false
         arguments:
-        tags: { name: storage.adapter }
+            - '@config'
+            - '@filesystem'
+            - '%core.root_path%'
+            - 'upload_path'
+        tags:
+            - { name: storage.adapter }
 
-    #providers
+# Providers
     storage.provider.local:
         class: phpbb\storage\provider\local
         arguments:
-        tags: { name: storage.provider }
+        tags:
+            - { name: storage.provider }

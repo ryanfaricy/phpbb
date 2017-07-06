@@ -1,8 +1,13 @@
-phpbb_storage_file_controller:
-    path:               /download/{storage}/{id}
-    methods:            [GET, POST]
+phpbb_storage_avatar_controller:
+    path:               /download/avatar/{file}
+    methods:            [GET]
     defaults:
-        _controller:    phpbb.storage.file.controller:handle
+        _controller:    phpbb.storage.avatar.controller:handle
+
+phpbb_storage_attachment_controller:
+    path:               /download/attachment/{id}
+    methods:            [GET]
+    defaults:
+        _controller:    phpbb.storage.attachment.controller:handle
     requirements:
-        storage:           attachent|avatar|backup
         id:             \d+

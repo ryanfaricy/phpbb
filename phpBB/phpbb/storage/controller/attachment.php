@@ -1,0 +1,283 @@
+<?php
+/**
+ *
+ * This file is part of the phpBB Forum Software package.
+ *
+ * @copyright (c) phpBB Limited <https://www.phpbb.com>
+ * @license GNU General Public License, version 2 (GPL-2.0)
+ *
+ * For full copyright and license information, please see
+ * the docs/CREDITS.txt file.
+ *
+ */
+
+namespace phpbb\storage\controller;
+
+use phpbb\config;
+use phpbb\db\driver\driver_interface;
+use phpbb\exception\http_exception;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+class attachment
+{
+	/**
+	 * @var \phpbb\config\config
+	 */
+	protected $config;
+
+	/**
+	* @var ContainerInterface
+	*/
+	protected $container;
+
+	/**
+	 * @var \phpbb\db\driver\driver_interface
+	 */
+	protected $db;
+
+	protected $request;
+
+	protected $storage;
+
+	protected $user;
+
+	/**
+	 * @var string
+	 */
+	protected $attachments_table;
+
+	/**
+	* Constructor.
+	*
+	* @param ContainerInterface $container A ContainerInterface instance
+	*/
+	public function __construct(config $config, ContainerInterface $container, db $db, request $request, storage $storage, user $user, $attachments_table)
+	{
+		$this->config = $config;
+		$this->container = $container;
+		$this->db = $db;
+		$this->request = $request;
+		$this->storage = $storage;
+		$this->user = $user;
+		$this->attachments_table = $attachments_table;
+	}
+
+	/**
+	 * Controller for /download/attachment/{id} routes
+	 *
+	 * @param int		$id		ID of the entity to report
+	 * @return \Symfony\Component\HttpFoundation\Response a Symfony response object
+	 * @throws \phpbb\exception\http_exception when $mode or $id is invalid for some reason
+	 */
+	public function handle($id)
+	{
+		$this->sun_check(); // https://github.com/phpbb/phpbb/commit/bf59a749c3346ed7341d03946b8ecd0701af9eb8
+
+		//if(!$this->attachments_enabled())
+		//{
+		//	send_status_line(404, 'Not Found');
+		//	trigger_error('ATTACHMENT_FUNCTIONALITY_DISABLED');
+		//}
+
+		$attachment = $this->get_attachment($id);
+
+		if(!$attachment)
+		{
+			throw new http_exception(404, 'ERROR_NO_ATTACHMENT');
+		}
+
+		if(!$this->is_download_allowed())
+		{
+			throw new http_exception(403, 'LINKAGE_FORBIDDEN');
+		}
+
+		if (!$attachment['in_message'] && !$config['allow_attachments'] || $attachment['in_message'] && !$config['allow_pm_attach'])
+		{
+			throw new http_exception(404, 'ATTACHMENT_FUNCTIONALITY_DISABLED');
+		}
+
+		if ($attachment['is_orphan'])
+		{
+			// We allow admins having attachment permissions to see orphan attachments...
+			$own_attachment = ($auth->acl_get('a_attach') || $attachment['poster_id'] == $user->data['user_id']) ? true : false;
+
+			if (!$own_attachment || ($attachment['in_message'] && !$auth->acl_get('u_pm_download')) || (!$attachment['in_message'] && !$auth->acl_get('u_download')))
+			{
+				throw new http_exception(404, 'ERROR_NO_ATTACHMENT');
+			}
+
+			// Obtain all extensions...
+			$extensions = $cache->obtain_attach_extensions(true);
+		}
+		else
+		{
+			if (!$attachment['in_message'])
+			{
+				phpbb_download_handle_forum_auth($db, $auth, $attachment['topic_id']);
+
+				$sql = 'SELECT forum_id, post_visibility
+					FROM ' . POSTS_TABLE . '
+					WHERE post_id = ' . (int) $attachment['post_msg_id'];
+				$result = $db->sql_query($sql);
+				$post_row = $db->sql_fetchrow($result);
+				$db->sql_freeresult($result);
+
+				if (!$post_row || ($post_row['post_visibility'] != ITEM_APPROVED && !$auth->acl_get('m_approve', $post_row['forum_id'])))
+				{
+					// Attachment of a soft deleted post and the user is not allowed to see the post
+					throw new http_exception(404, 'ERROR_NO_ATTACHMENT');
+				}
+			}
+			else
+			{
+				// Attachment is in a private message.
+				$post_row = array('forum_id' => false);
+				phpbb_download_handle_pm_auth($db, $auth, $user->data['user_id'], $attachment['post_msg_id']);
+			}
+
+			$extensions = array();
+			if (!extension_allowed($post_row['forum_id'], $attachment['extension'], $extensions))
+			{
+				throw new http_exception(403, sprintf($user->lang['EXTENSION_DISABLED_AFTER_POSTING'], $attachment['extension']));
+			}
+		}
+
+		$attachment['physical_filename'] = utf8_basename($attachment['physical_filename']); //?
+
+		// ...............
+		// etc, etc
+
+		$this->storage->get_contents($file); // output file with streams
+	}
+
+	// TODO: dont use superglobals, use request
+	protected function sun_check()
+	{
+		// Thank you sun.
+		if (isset($_SERVER['CONTENT_TYPE']))
+		{
+			if ($_SERVER['CONTENT_TYPE'] === 'application/x-java-archive')
+			{
+				exit;
+			}
+		}
+		else if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Java') !== false)
+		{
+			exit;
+		}
+	}
+
+	// Unnecessary method
+	//protected function attachments_enabled()
+	//{
+	//	if (!$this->config['allow_attachments'] && !$this->config['allow_pm_attach'])
+	//	{
+	//		return false;
+	//	}
+	//
+	//	return true;
+	//}
+
+	protected function get_attachment($id)
+	{
+		$sql = 'SELECT attach_id, post_msg_id, topic_id, in_message, poster_id, is_orphan, physical_filename, real_filename, extension, mimetype, filesize, filetime
+			FROM ' . $this->attachments_table . "
+			WHERE attach_id = $id";
+		$result = $this->db->sql_query($sql);
+		$attachment = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return $attachment;
+	}
+
+	/**
+	 * Check if downloading item is allowed
+	 */
+	protected function is_download_allowed()
+	{
+		return true;
+
+
+		if (!$this->config['secure_downloads'])
+		{
+			return true;
+		}
+
+		$url = @parse_url(htmlspecialchars_decode($this->request->header('Referer')));
+
+		if (!isset($url['host']))
+		{
+			return $this->config['secure_allow_empty_referer'] ? true : false;
+		}
+
+		$hostname = $url['host'];
+
+		$server_name = $this->user->host;
+		if ($this->config['force_server_vars'] || !$server_name)
+		{
+			$server_name = $this->config['server_name'];
+		}
+
+		//if (!$config['secure_allow_deny'] || preg_match('#^.*?' . preg_quote($server_name, '#') . '.*?$#i', $hostname))
+		if(!$config['secure_allow_deny'] || stristr($hostname, $server_name))
+		{
+			return true;
+		}
+
+		// Get IP's and hostnames
+		$iplist = @gethostbynamel($hostname);
+		if ($iplist === null)
+		{
+			$iplist = [];
+		}
+
+		$sql = 'SELECT site_ip, site_hostname, ip_exclude
+			FROM ' . SITELIST_TABLE;
+		$result = $db->sql_query($sql);
+
+		while ($row = $this->db->fetchrow($result))
+		{
+			$site_ip = trim($row['site_ip']);
+			$site_hostname = trim($row['site_hostname']);
+
+			if ($site_ip)
+			{
+				foreach ($iplist as $ip)
+				{
+					if (preg_match('#^' . str_replace('\*', '.*?', preg_quote($site_ip, '#')) . '$#i', $ip))
+					{
+						if ($row['ip_exclude'])
+						{
+							$allowed = ($config['secure_allow_deny']) ? false : true;
+							break 2;
+						}
+						else
+						{
+							$allowed = ($config['secure_allow_deny']) ? true : false;
+						}
+					}
+				}
+			}
+
+			if ($site_hostname)
+			{
+				if (preg_match('#^' . str_replace('\*', '.*?', preg_quote($site_hostname, '#')) . '$#i', $hostname))
+				{
+					if ($row['ip_exclude'])
+					{
+						$allowed = ($config['secure_allow_deny']) ? false : true;
+						break;
+					}
+					else
+					{
+						$allowed = ($config['secure_allow_deny']) ? true : false;
+					}
+				}
+			}
+
+			$this->db->sql_freeresult($result);
+		}
+
+		return $alowed;
+	}
+}
