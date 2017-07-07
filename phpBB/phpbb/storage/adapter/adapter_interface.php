@@ -26,6 +26,8 @@ interface adapter_interface
 	 */
 	public function put_contents($path, $content);
 
+	public function configure($options);
+
 	/**
 	 * Read the contents of a file
 	 *

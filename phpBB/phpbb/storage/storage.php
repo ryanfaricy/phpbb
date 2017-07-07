@@ -17,9 +17,9 @@ class storage
 {
 	protected $adapter;
 
-	public function __construct($factory, $storage)
+	public function __construct($factory, $storage_name)
 	{
-		$this->adapter = $factory->get($storage);
+		$this->adapter = $factory->get($storage_name);
 	}
 
 	public function put_contents($path, $content)

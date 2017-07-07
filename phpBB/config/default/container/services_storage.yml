@@ -44,6 +44,7 @@ services:
         class: phpbb\storage\adapter_factory
         arguments:
             - '@config'
+            - '@service_container'
             - '@storage.adapter_collection'
             - '@storage.provider_collection'
 
@@ -67,10 +68,8 @@ services:
         class: phpbb\storage\adapter\local
         shared: false
         arguments:
-            - '@config'
             - '@filesystem'
             - '%core.root_path%'
-            - 'avatar_path'
         tags:
             - { name: storage.adapter }
 

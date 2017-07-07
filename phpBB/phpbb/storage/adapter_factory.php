@@ -15,25 +15,53 @@ namespace phpbb\storage;
 
 use phpbb\config\config;
 use phpbb\di\service_collection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class adapter_factory
 {
 	protected $config;
+	protected $container;
 	protected $adapters;
 	protected $providers;
 
-	public function __construct(config $config, service_collection $adapters, service_collection $providers)
+	public function __construct(config $config, ContainerInterface $container, service_collection $adapters, service_collection $providers)
 	{
 		$this->config = $config;
+		$this->container = $container;
 		$this->adapters = $adapters;
 		$this->providers = $providers;
 	}
 
-	public function get($type)
+	public function get($storage_name)
 	{
-		$adapter = $this->config['storage_' . $type];
-		$adapter = 'phpbb\\storage\\adapter\\local';
+		$provider_class = $this->config['storage_' . $storage_name]; // $storage_name = avatar, attachment, backup
 
-		return $this->adapters->get_by_class($adapter);
+		try
+		{
+			$provider = $this->providers->get_by_class($provider_class);
+		}
+		catch(\RuntimeException $e)
+		{
+			// throw $e; // TODO: trigger error or something
+			echo 1;
+		}
+
+		$adapter = $this->container->get($provider->get_class());
+
+		$adapter->configure($this->build_options($storage_name, $provider->get_options())); // ['path' = 'images/avatar/upload'] ( from $config['avatar/path'])
+
+		return $adapter;
+	}
+
+	public function build_options($storage_name, array $definitions)
+	{
+		$options = [];
+
+		foreach ($definitions as $def)
+		{
+			$options[$def] = $this->config[$storage_name . '/' . $def];
+		}
+
+		return $options;
 	}
 }

@@ -15,5 +15,6 @@ namespace phpbb\storage\provider;
 
 interface provider_interface
 {
-	public function get_name();
+	public function get_class();
+	public function get_options();
 }

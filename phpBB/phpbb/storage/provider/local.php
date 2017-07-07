@@ -18,8 +18,13 @@ use phpbb\filesystem\exception\filesystem_exception;
 
 class local implements provider_interface
 {
-	public function get_name()
+	public function get_class()
 	{
-		return 'local';
+		return 'storage.adapter.local';
+	}
+
+	public function get_options()
+	{
+		return ['path'];
 	}
 }
