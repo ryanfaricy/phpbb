@@ -43,7 +43,6 @@ class adapter_factory
 		catch(\RuntimeException $e)
 		{
 			// throw $e; // TODO: trigger error or something
-			echo 1;
 		}
 
 		$adapter = $this->container->get($provider->get_class());
