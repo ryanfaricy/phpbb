@@ -26,6 +26,11 @@ interface adapter_interface
 	 */
 	public function put_contents($path, $content);
 
+	/**
+	 * Dumps content into a file.
+	 *
+	 * @param array	options		Storage-specific options.
+	 */
 	public function configure($options);
 
 	/**

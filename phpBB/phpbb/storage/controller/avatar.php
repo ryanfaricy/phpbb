@@ -13,10 +13,13 @@
 
 namespace phpbb\storage\controller;
 
-use phpbb\config;
+use phpbb\config\config;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use phpbb\db\driver\driver_interface;
 use phpbb\exception\http_exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use phpbb\request\request;
+use phpbb\storage\storage;
 
 class avatar
 {
@@ -35,6 +38,10 @@ class avatar
 	 */
 	protected $db;
 
+	protected $request;
+
+	protected $storage;
+
 	/**
 	 * @var string
 	 */
@@ -45,12 +52,13 @@ class avatar
 	*
 	* @param ContainerInterface $container A ContainerInterface instance
 	*/
-	public function __construct(config $config, ContainerInterface $container, db $db, $attachments_table)
+	public function __construct(config $config, ContainerInterface $container, driver_interface $db, request $request, storage $storage)
 	{
 		$this->config = $config;
 		$this->container = $container;
 		$this->db = $db;
-		$this->attachments_table = $attachments_table;
+		$this->request = $request;
+		$this->storage = $storage;
 	}
 
 	/**
@@ -60,29 +68,75 @@ class avatar
 	 * @return \Symfony\Component\HttpFoundation\Response a Symfony response object
 	 * @throws \phpbb\exception\http_exception when $mode or $id is invalid for some reason
 	 */
-	public function handle($filename)
+	public function handle($file)
 	{
 		$this->sun_check(); // ??
+		global $phpbb_root_path, $phpEx;
+		require_once($phpbb_root_path . 'includes/constants.' . $phpEx);
+		require_once($phpbb_root_path . 'includes/functions.' . $phpEx);
+		require_once($phpbb_root_path . 'includes/functions_download' . '.' . $phpEx);
+		require_once($phpbb_root_path . 'includes/utf/utf_tools.' . $phpEx);
 
-		$file = $this->get_avatar_file($id);
+		// worst-case default
+		$browser = strtolower($this->request->header('User-Agent', 'msie 6.0'));
+
+		$filename = $file;
+		$avatar_group = false;
+		$exit = false;
+
+		if (isset($filename[0]) && $filename[0] === 'g')
+		{
+			$avatar_group = true;
+			$filename = substr($filename, 1);
+		}
+
+		// '==' is not a bug - . as the first char is as bad as no dot at all
+		if (strpos($filename, '.') == false)
+		{
+			throw new http_exception(403, 'Forbbiden');
+			$exit = true;
+		}
+
+		if (!$exit)
+		{
+			$ext		= substr(strrchr($filename, '.'), 1);
+			$stamp		= (int) substr(stristr($filename, '_'), 1);
+			$filename	= (int) $filename;
+			$exit = set_modified_headers($stamp, $browser);
+		}
+		if (!$exit && !in_array($ext, array('png', 'gif', 'jpg', 'jpeg')))
+		{
+			// no way such an avatar could exist. They are not following the rules, stop the show.
+			throw new http_exception(403, 'Forbbiden');
+			$exit = true;
+		}
 
 
-		$storage = $this->container->get('storage.'.$type);
-		echo $storage->get_contents($file);
+		if (!$exit)
+		{
+			if (!$filename)
+			{
+				// no way such an avatar could exist. They are not following the rules, stop the show.
+				throw new http_exception(403, 'Forbbiden');
+			}
+			else
+			{
+				send_avatar_to_browser(($avatar_group ? 'g' : '') . $filename . '.' . $ext, $browser);
+			}
+		}
+		file_gc();
 	}
 
-	// TODO: dont use superglobals, use request
 	protected function sun_check()
 	{
 		// Thank you sun.
-		if (isset($_SERVER['CONTENT_TYPE']))
-		{
-			if ($_SERVER['CONTENT_TYPE'] === 'application/x-java-archive')
+		if ($this->request->header('content-type', false))
+		{			if ($_SERVER['CONTENT_TYPE'] === 'application/x-java-archive')
 			{
 				exit;
 			}
 		}
-		else if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Java') !== false)
+		else if (strpos($this->request->header('User-Agent', ''), 'Java') !== false)
 		{
 			exit;
 		}

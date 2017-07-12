@@ -43,7 +43,7 @@ INSERT INTO phpbb_config (config_name, config_value) VALUES ('allow_smilies', '1
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('allow_topic_notify', '1');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('allowed_schemes_links', 'http,https,ftp');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('assets_version', '1');
-INSERT INTO phpbb_config (config_name, config_value) VALUES ('attachment/path', 'files');
+INSERT INTO phpbb_config (config_name, config_value) VALUES ('storage/attachment/config/path', 'files');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('attachment_quota', '52428800');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('auth_bbcode_pm', '1');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('auth_flash_pm', '0');
@@ -56,9 +56,9 @@ INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_max_height'
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_max_width', '90');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_min_height', '20');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_min_width', '20');
-INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar/path', 'images/avatars/upload');
+INSERT INTO phpbb_config (config_name, config_value) VALUES ('storage/avatar/config/path', 'images/avatars/upload');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_salt', 'phpbb_avatar');
-INSERT INTO phpbb_config (config_name, config_value) VALUES ('backup/path', 'store');
+INSERT INTO phpbb_config (config_name, config_value) VALUES ('storage/backup/config/path', 'store');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('board_contact', 'contact@yourdomain.tld');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('board_contact_name', '');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('board_disable', '0');
@@ -315,6 +315,7 @@ INSERT INTO phpbb_config (config_name, config_value, is_dynamic) VALUES ('sessio
 INSERT INTO phpbb_config (config_name, config_value, is_dynamic) VALUES ('upload_dir_size', '0', 1);
 INSERT INTO phpbb_config (config_name, config_value, is_dynamic) VALUES ('warnings_last_gc', '0', 1);
 
+# keep this for now, will be removed in the future
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('avatar_path', 'images/avatars/upload');
 INSERT INTO phpbb_config (config_name, config_value) VALUES ('upload_path', 'files');
 

@@ -6,8 +6,8 @@ services:
             - '@config'
             - '@service_container'
             - '@dbal.conn'
+            - '@request'
             - '@storage.avatar'
-            - '%tables.attachments%'
 
     phpbb.storage.controller.attachment:
         class: phpbb\storage\controller\attachment

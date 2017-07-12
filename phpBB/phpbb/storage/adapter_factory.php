@@ -34,20 +34,13 @@ class adapter_factory
 
 	public function get($storage_name)
 	{
-		$provider_class = $this->config['storage_' . $storage_name]; // $storage_name = avatar, attachment, backup
+		$provider_class = $this->config['storage_' . $storage_name];
 
-		try
-		{
-			$provider = $this->providers->get_by_class($provider_class);
-		}
-		catch(\RuntimeException $e)
-		{
-			trigger_error($e->getMessage());
-		}
+		$provider = $this->providers->get_by_class($provider_class);
 
 		$adapter = $this->container->get($provider->get_class());
 
-		$adapter->configure($this->build_options($storage_name, $provider->get_options())); // ['path' = 'images/avatar/upload'] ( from $config['avatar/path'])
+		$adapter->configure($this->build_options($storage_name, $provider->get_options()));
 
 		return $adapter;
 	}

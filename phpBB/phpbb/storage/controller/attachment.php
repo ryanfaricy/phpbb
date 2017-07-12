@@ -13,10 +13,14 @@
 
 namespace phpbb\storage\controller;
 
-use phpbb\config;
+use phpbb\config\config;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use phpbb\db\driver\driver_interface;
 use phpbb\exception\http_exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use phpbb\request\request;
+use phpbb\storage\storage;
+use phpbb\user;
 
 class attachment
 {
@@ -51,7 +55,7 @@ class attachment
 	*
 	* @param ContainerInterface $container A ContainerInterface instance
 	*/
-	public function __construct(config $config, ContainerInterface $container, db $db, request $request, storage $storage, user $user, $attachments_table)
+	public function __construct(config $config, ContainerInterface $container, driver_interface $db, request $request, storage $storage, user $user, $attachments_table)
 	{
 		$this->config = $config;
 		$this->container = $container;
@@ -73,6 +77,12 @@ class attachment
 	{
 		global $cache, $auth;
 
+		if(!function_exists('phpbb_download_handle_forum_auth'))
+		{
+			global $phpbb_root_path;
+			include $phpbb_root_path.'includes/functions_download.php';
+		}
+
 		$this->sun_check(); // https://github.com/phpbb/phpbb/commit/bf59a749c3346ed7341d03946b8ecd0701af9eb8
 
 		//if(!$this->attachments_enabled())
@@ -93,7 +103,7 @@ class attachment
 			throw new http_exception(403, 'LINKAGE_FORBIDDEN');
 		}
 
-		if (!$attachment['in_message'] && !$config['allow_attachments'] || $attachment['in_message'] && !$config['allow_pm_attach'])
+		if (!$attachment['in_message'] && !$this->config['allow_attachments'] || $attachment['in_message'] && !$this->config['allow_pm_attach'])
 		{
 			throw new http_exception(404, 'ATTACHMENT_FUNCTIONALITY_DISABLED');
 		}
@@ -115,14 +125,15 @@ class attachment
 		{
 			if (!$attachment['in_message'])
 			{
+
 				phpbb_download_handle_forum_auth($this->db, $auth, $attachment['topic_id']);
 
 				$sql = 'SELECT forum_id, post_visibility
 					FROM ' . POSTS_TABLE . '
 					WHERE post_id = ' . (int) $attachment['post_msg_id'];
-				$result = $db->sql_query($sql);
-				$post_row = $db->sql_fetchrow($result);
-				$db->sql_freeresult($result);
+				$result = $this->db->sql_query($sql);
+				$post_row = $this->db->sql_fetchrow($result);
+				$this->db->sql_freeresult($result);
 
 				if (!$post_row || ($post_row['post_visibility'] != ITEM_APPROVED && !$auth->acl_get('m_approve', $post_row['forum_id'])))
 				{
@@ -134,7 +145,7 @@ class attachment
 			{
 				// Attachment is in a private message.
 				$post_row = array('forum_id' => false);
-				phpbb_download_handle_pm_auth($db, $auth, $this->user->data['user_id'], $attachment['post_msg_id']);
+				phpbb_download_handle_pm_auth($this->db, $auth, $this->user->data['user_id'], $attachment['post_msg_id']);
 			}
 
 			$extensions = array();
@@ -150,12 +161,12 @@ class attachment
 		$download_mode = (int) $extensions[$attachment['extension']]['download_mode'];
 		$display_cat = $extensions[$attachment['extension']]['display_cat'];
 
-		if (($display_cat == ATTACHMENT_CATEGORY_IMAGE || $display_cat == ATTACHMENT_CATEGORY_THUMB) && !$user->optionget('viewimg'))
+		if (($display_cat == ATTACHMENT_CATEGORY_IMAGE || $display_cat == ATTACHMENT_CATEGORY_THUMB) && !$this->user->optionget('viewimg'))
 		{
 			$display_cat = ATTACHMENT_CATEGORY_NONE;
 		}
 
-		if ($display_cat == ATTACHMENT_CATEGORY_FLASH && !$user->optionget('viewflash'))
+		if ($display_cat == ATTACHMENT_CATEGORY_FLASH && !$this->user->optionget('viewflash'))
 		{
 			$display_cat = ATTACHMENT_CATEGORY_NONE;
 		}
@@ -167,10 +178,10 @@ class attachment
 		else if ($display_cat == ATTACHMENT_CATEGORY_NONE && !$attachment['is_orphan'] && !phpbb_http_byte_range($attachment['filesize']))
 		{
 			// Update download count
-			phpbb_increment_downloads($db, $attachment['attach_id']);
+			phpbb_increment_downloads($this->db, $attachment['attach_id']);
 		}
 
-		if ($display_cat == ATTACHMENT_CATEGORY_IMAGE && $mode === 'view' && (strpos($attachment['mimetype'], 'image') === 0) && (strpos(strtolower($user->browser), 'msie') !== false) && !phpbb_is_greater_ie_version($user->browser, 7))
+		if ($display_cat == ATTACHMENT_CATEGORY_IMAGE && $mode === 'view' && (strpos($attachment['mimetype'], 'image') === 0) && (strpos(strtolower($this->user->browser), 'msie') !== false) && !phpbb_is_greater_ie_version($this->user->browser, 7))
 		{
 			wrap_img_in_html(append_sid($phpbb_root_path . 'download/file.' . $phpEx, 'id=' . $attachment['attach_id']), $attachment['real_filename']);
 			file_gc();
@@ -181,37 +192,32 @@ class attachment
 			if ($download_mode == PHYSICAL_LINK)
 			{
 				// This presenting method should no longer be used
-				if (!@is_dir($phpbb_root_path . $config['upload_path']))
+				if (!@is_dir($phpbb_root_path . $this->config['upload_path']))
 				{
-					send_status_line(500, 'Internal Server Error');
-					trigger_error($user->lang['PHYSICAL_DOWNLOAD_NOT_POSSIBLE']);
+					throw new exception('PHYSICAL_DOWNLOAD_NOT_POSSIBLE')
 				}
 
-				redirect($phpbb_root_path . $config['upload_path'] . '/' . $attachment['physical_filename']);
+				redirect($phpbb_root_path . $this->config['upload_path'] . '/' . $attachment['physical_filename']);
 				file_gc();
 			}
 			else
 			{
-				send_file_to_browser($attachment, $config['upload_path'], $display_cat);
+				send_file_to_browser($attachment, $this->config['upload_path'], $display_cat);
 				file_gc();
 			}
 		}
-
-		$this->storage->get_contents($file); // output file with streams
 	}
 
-	// TODO: dont use superglobals, use request
 	protected function sun_check()
 	{
 		// Thank you sun.
-		if (isset($_SERVER['CONTENT_TYPE']))
-		{
-			if ($_SERVER['CONTENT_TYPE'] === 'application/x-java-archive')
+		if ($this->request->header('content-type', false))
+		{			if ($_SERVER['CONTENT_TYPE'] === 'application/x-java-archive')
 			{
 				exit;
 			}
 		}
-		else if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Java') !== false)
+		else if (strpos($this->request->header('User-Agent', ''), 'Java') !== false)
 		{
 			exit;
 		}
@@ -269,7 +275,7 @@ class attachment
 		}
 
 		//if (!$config['secure_allow_deny'] || preg_match('#^.*?' . preg_quote($server_name, '#') . '.*?$#i', $hostname))
-		if(!$config['secure_allow_deny'] || stristr($hostname, $server_name))
+		if(!$this->config['secure_allow_deny'] || stristr($hostname, $server_name))
 		{
 			return true;
 		}
@@ -298,12 +304,12 @@ class attachment
 					{
 						if ($row['ip_exclude'])
 						{
-							$allowed = ($config['secure_allow_deny']) ? false : true;
+							$allowed = ($this->config['secure_allow_deny']) ? false : true;
 							break 2;
 						}
 						else
 						{
-							$allowed = ($config['secure_allow_deny']) ? true : false;
+							$allowed = ($this->config['secure_allow_deny']) ? true : false;
 						}
 					}
 				}
@@ -315,12 +321,12 @@ class attachment
 				{
 					if ($row['ip_exclude'])
 					{
-						$allowed = ($config['secure_allow_deny']) ? false : true;
+						$allowed = ($this->config['secure_allow_deny']) ? false : true;
 						break;
 					}
 					else
 					{
-						$allowed = ($config['secure_allow_deny']) ? true : false;
+						$allowed = ($this->config['secure_allow_deny']) ? true : false;
 					}
 				}
 			}
