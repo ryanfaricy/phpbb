@@ -13,7 +13,7 @@ phpbb_storage_avatar:
 #    requirements:
 #        id:             \d+
 
-phpbb_storage_attachment:W
+phpbb_storage_attachment:
     path:               /download/attachment/{id}
     methods:            [GET]
     defaults:
