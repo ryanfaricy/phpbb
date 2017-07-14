@@ -29,7 +29,7 @@ class storage
 
 	public function get_contents($path)
 	{
-		$this->adapter->put_contents($path);
+		$this->adapter->get_contents($path);
 	}
 
 	public function exists($path)
@@ -60,5 +60,10 @@ class storage
 	public function delete_dir($path)
 	{
 		$this->adapter->delete_dir($path);
+	}
+
+	public function download($path, $filename = '')
+	{
+		return $this->adapter->download($path, $filename);
 	}
 }

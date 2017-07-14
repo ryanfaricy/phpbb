@@ -15,6 +15,8 @@ namespace phpbb\storage\adapter;
 
 use phpbb\storage\exception\exception;
 use phpbb\filesystem\exception\filesystem_exception;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class local implements adapter_interface
 {
@@ -157,6 +159,23 @@ class local implements adapter_interface
 		{
 			throw new exception('', $path, array(), $e); // CANNOT_CREATE_DIRECTORY
 		}
+	}
+
+	public function download($path, $filename)
+	{
+		if (!$this->exists($path))
+		{
+			throw new exception('', $path); // FILE_DONT_EXIST
+		}
+
+		$response = new BinaryFileResponse($this->root_path . $path);
+
+		$response->setContentDisposition(
+				ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+				$filename
+		);
+
+		return $response;
 	}
 
 }

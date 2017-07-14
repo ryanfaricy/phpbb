@@ -121,7 +121,14 @@ class avatar
 			}
 			else
 			{
-				send_avatar_to_browser(($avatar_group ? 'g' : '') . $filename . '.' . $ext, $browser);
+				try
+				{
+					return $this->storage->download($this->config['avatar_salt'] . '_' . ($avatar_group ? 'g' : '') . $filename . '.' . $ext);
+				}
+				catch (exception $e)
+				{
+					throw new http_exception(404, 'ERROR_NO_ATTACHMENT');
+				}
 			}
 		}
 		file_gc();

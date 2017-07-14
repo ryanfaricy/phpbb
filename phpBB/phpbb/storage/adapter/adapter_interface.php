@@ -82,4 +82,14 @@ interface adapter_interface
 	 * 												When the file cannot be copied
 	 */
 	public function copy($path_orig, $path_dest);
+
+	/**
+	 * Send file to browser for download.
+	 *
+	 * @param string	$path	The file that is going to be send to the browser
+	 *
+	 * @throws \phpbb\storage\exception\exception	When target exists
+	 *
+	 */
+	public function download($path, $filename);
 }

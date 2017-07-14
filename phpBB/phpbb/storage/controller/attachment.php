@@ -77,6 +77,8 @@ class attachment
 	{
 		global $cache, $auth;
 
+		$mode = '';
+
 		if(!function_exists('phpbb_download_handle_forum_auth'))
 		{
 			global $phpbb_root_path;
@@ -194,7 +196,7 @@ class attachment
 				// This presenting method should no longer be used
 				if (!@is_dir($phpbb_root_path . $this->config['upload_path']))
 				{
-					throw new exception('PHYSICAL_DOWNLOAD_NOT_POSSIBLE')
+					throw new exception('PHYSICAL_DOWNLOAD_NOT_POSSIBLE');
 				}
 
 				redirect($phpbb_root_path . $this->config['upload_path'] . '/' . $attachment['physical_filename']);
@@ -202,7 +204,14 @@ class attachment
 			}
 			else
 			{
-				send_file_to_browser($attachment, $this->config['upload_path'], $display_cat);
+				try
+				{
+					return $this->storage->download($attachment['physical_filename'], $attachment['real_filename']);
+				}
+				catch (exception $e)
+				{
+					throw new http_exception(404, 'ERROR_NO_ATTACHMENT');
+				}
 				file_gc();
 			}
 		}
