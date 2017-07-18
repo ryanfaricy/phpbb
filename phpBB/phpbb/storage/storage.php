@@ -62,7 +62,7 @@ class storage
 		$this->adapter->delete_dir($path);
 	}
 
-	public function download($path, $filename = '')
+	public function get_file_path($path, $filename = '')
 	{
 		return $this->adapter->download($path, $filename);
 	}

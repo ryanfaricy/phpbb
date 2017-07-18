@@ -89,7 +89,6 @@ interface adapter_interface
 	 * @param string	$path	The file that is going to be send to the browser
 	 *
 	 * @throws \phpbb\storage\exception\exception	When target exists
-	 *
 	 */
-	public function download($path, $filename);
+	public function get_file_path($path, $filename);
 }

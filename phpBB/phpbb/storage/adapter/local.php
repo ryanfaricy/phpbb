@@ -161,21 +161,14 @@ class local implements adapter_interface
 		}
 	}
 
-	public function download($path, $filename)
+	public function get_file_path($path, $filename)
 	{
 		if (!$this->exists($path))
 		{
 			throw new exception('', $path); // FILE_DONT_EXIST
 		}
 
-		$response = new BinaryFileResponse($this->root_path . $path);
-
-		$response->setContentDisposition(
-				ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-				$filename
-		);
-
-		return $response;
+		return 'file://' . $this->rooth_path . $path;
 	}
 
 }
