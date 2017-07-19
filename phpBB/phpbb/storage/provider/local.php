@@ -20,7 +20,7 @@ class local implements provider_interface
 {
 	public function get_class()
 	{
-		return '\\phpbb\\storage\\adapter\\local::class';
+		return \phpbb\storage\adapter\local::class;
 	}
 
 	public function get_options()

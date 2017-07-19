@@ -35,11 +35,9 @@ class adapter_factory
 	public function get($storage_name)
 	{
 		$provider_class = $this->config['storage_' . $storage_name];
-
 		$provider = $this->providers->get_by_class($provider_class);
 
-		$adapter = $this->container->get($provider->get_class());
-
+		$adapter = $this->adapters->get_by_class($provider->get_class());
 		$adapter->configure($this->build_options($storage_name, $provider->get_options()));
 
 		return $adapter;
