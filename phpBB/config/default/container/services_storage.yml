@@ -1,9 +1,18 @@
 services:
+
+# Storages
+    storage.avatar:
+        class: phpbb\storage\storage
+        arguments:
+            - '@storage.adapter.factory'
+            - 'avatar'
+
 # Factory
     storage.adapter.factory:
         class: phpbb\storage\adapter_factory
         arguments:
             - '@config'
+            - '@service_container'
             - '@storage.adapter_collection'
             - '@storage.provider_collection'
 
@@ -27,7 +36,6 @@ services:
         class: phpbb\storage\adapter\local
         shared: false
         arguments:
-            - '@config'
             - '@filesystem'
             - '%core.root_path%'
         tags:
