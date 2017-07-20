@@ -23,11 +23,6 @@ class helper
 	protected static $symfony_filesystem;
 
 	/**
-	* @var \Symfony\Component\Filesystem\Filesystem
-	*/
-	protected static $symfony_filesystem;
-
-	/**
 	 * Eliminates useless . and .. components from specified path.
 	 *
 	 * @param string $path Path to clean
@@ -371,21 +366,6 @@ class helper
 		}
 
 		return $return_array ? $resolved : $resolved_path;
-	}
-
-	/**
-	 * Get an instance of symfony's filesystem object.
-	 *
-	 * @return \Symfony\Component\Filesystem\Filesystem	Symfony filesystem
-	 */
-	protected static function get_symfony_filesystem()
-	{
-		if (self::$symfony_filesystem === null)
-		{
-			self::$symfony_filesystem = new symfony_filesystem();
-		}
-
-		return self::$symfony_filesystem;
 	}
 
 	/**
