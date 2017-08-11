@@ -252,7 +252,6 @@ else
 		}
 	}
 
-	$download_mode = (int) $extensions[$attachment['extension']]['download_mode'];
 	$display_cat = $extensions[$attachment['extension']]['display_cat'];
 
 	if (($display_cat == ATTACHMENT_CATEGORY_IMAGE || $display_cat == ATTACHMENT_CATEGORY_THUMB) && !$user->optionget('viewimg'))
@@ -272,7 +271,6 @@ else
 	* @var	int		attach_id			The attachment ID
 	* @var	array	attachment			Array with attachment data
 	* @var	int		display_cat			Attachment category
-	* @var	int		download_mode		File extension specific download mode
 	* @var	array	extensions			Array with file extensions data
 	* @var	string	mode				Download mode
 	* @var	bool	thumbnail			Flag indicating if the file is a thumbnail
@@ -283,7 +281,6 @@ else
 		'attach_id',
 		'attachment',
 		'display_cat',
-		'download_mode',
 		'extensions',
 		'mode',
 		'thumbnail',
@@ -307,24 +304,7 @@ else
 	}
 	else
 	{
-		//
-		// Determine the 'presenting'-method
-		if ($download_mode == PHYSICAL_LINK)
-		{
-			// This presenting method should no longer be used
-			if (!@is_dir($phpbb_root_path . $config['upload_path']))
-			{
-				send_status_line(500, 'Internal Server Error');
-				trigger_error($user->lang['PHYSICAL_DOWNLOAD_NOT_POSSIBLE']);
-			}
-
-			redirect($phpbb_root_path . $config['upload_path'] . '/' . $attachment['physical_filename']);
-			file_gc();
-		}
-		else
-		{
-			send_file_to_browser($attachment, $display_cat);
-			file_gc();
-		}
+		send_file_to_browser($attachment, $display_cat);
+		file_gc();
 	}
 }
