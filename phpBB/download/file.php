@@ -264,6 +264,8 @@ else
 		$display_cat = ATTACHMENT_CATEGORY_NONE;
 	}
 
+	$redirect = '';
+
 	/**
 	* Event to modify data before sending file to browser
 	*
@@ -276,6 +278,7 @@ else
 	* @var	bool	thumbnail			Flag indicating if the file is a thumbnail
 	* @since 3.1.6-RC1
 	* @changed 3.1.7-RC1	Fixing wrong name of a variable (replacing "extension" by "extensions")
+	* @changed 3.3.0-a1		Add redirect variable
 	*/
 	$vars = array(
 		'attach_id',
@@ -284,6 +287,7 @@ else
 		'extensions',
 		'mode',
 		'thumbnail',
+		'redirect',
 	);
 	extract($phpbb_dispatcher->trigger_event('core.download_file_send_to_browser_before', compact($vars)));
 
@@ -304,7 +308,14 @@ else
 	}
 	else
 	{
-		send_file_to_browser($attachment, $display_cat);
+		if (!empty($redirect))
+		{
+			redirect($redirect, false, true);
+		}
+		else {
+			send_file_to_browser($attachment, $display_cat);
+		}
+
 		file_gc();
 	}
 }
