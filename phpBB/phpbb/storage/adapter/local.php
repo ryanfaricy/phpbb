@@ -331,4 +331,22 @@ class local implements adapter_interface, stream_interface
 	{
 		return $this->image_dimensions($path);
 	}
+
+	// some storage apis like dropbox return this information
+	// (i havent seen others, but some of them are unlimited)
+
+	public function get_free_space()
+	{
+		return disk_free_space();
+	}
+
+	public function get_used_space()
+	{
+		return disk_total_space();
+	}
+
+	public function get_space_left()
+	{
+		return $this->get_total_space-$this->get_free_space();
+	}
 }

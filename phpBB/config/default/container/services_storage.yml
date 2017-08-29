@@ -1,11 +1,17 @@
 services:
 
+    storage.a.avatar: # "a" because i dont know what to put, but probably this should "replace"/be integrated with storage
+                      # and provide a method to access directly the adapter
+        class: phpbb\storage\avatar
+        arguments:
+            - '@db'
+
 # Storages
     storage.avatar:
         class: phpbb\storage\storage
         arguments:
             - '@storage.adapter.factory'
-            - 'avatar'
+            - '@storage.a.avatar'
         tags:
             - { name: storage }
 
