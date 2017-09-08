@@ -276,6 +276,7 @@ else
 	* @var	array	extensions			Array with file extensions data
 	* @var	string	mode				Download mode
 	* @var	bool	thumbnail			Flag indicating if the file is a thumbnail
+	* @var	string	redirect			Url to do a redirection instead of serving the file
 	* @since 3.1.6-RC1
 	* @changed 3.1.7-RC1	Fixing wrong name of a variable (replacing "extension" by "extensions")
 	* @changed 3.3.0-a1		Add redirect variable
