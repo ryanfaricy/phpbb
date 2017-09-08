@@ -313,7 +313,8 @@ else
 		{
 			redirect($redirect, false, true);
 		}
-		else {
+		else
+		{
 			send_file_to_browser($attachment, $display_cat);
 		}
 
