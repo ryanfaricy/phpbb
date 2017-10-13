@@ -1,0 +1,4 @@
+[submodule "phpBB/ext/rubencm/multistorage"]
+	path = phpBB/ext/rubencm/multistorage
+	url = https://github.com/ryanfaricy/phpbb-ext-storage-flysystem.git
+	branch = master
