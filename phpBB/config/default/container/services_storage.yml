@@ -1,11 +1,27 @@
 services:
 
 # Storages
+    storage.attachment:
+        class: phpbb\storage\storage
+        arguments:
+            - '@storage.adapter.factory'
+            - 'attachment'
+        tags:
+            - { name: storage }
+
     storage.avatar:
         class: phpbb\storage\storage
         arguments:
             - '@storage.adapter.factory'
             - 'avatar'
+        tags:
+            - { name: storage }
+
+    storage.backup:
+        class: phpbb\storage\storage
+        arguments:
+            - '@storage.adapter.factory'
+            - 'backup'
         tags:
             - { name: storage }
 
@@ -51,9 +67,94 @@ services:
         tags:
             - { name: storage.adapter }
 
+    storage.adapter.aws_s3:
+        class: phpbb\storage\adapter\aws_s3
+        shared: false
+        arguments:
+            - '@filesystem'
+            - '@upload_imagesize'
+            - '@mimetype.guesser'
+            - '%core.root_path%'
+        tags:
+            - { name: storage.adapter }
+
+    storage.adapter.azure_blob:
+        class: phpbb\storage\adapter\azure_blob
+        shared: false
+        arguments:
+            - '@filesystem'
+            - '@upload_imagesize'
+            - '@mimetype.guesser'
+            - '%core.root_path%'
+        tags:
+            - { name: storage.adapter }
+
+    storage.adapter.dropbox:
+        class: phpbb\storage\adapter\dropbox
+        shared: false
+        arguments:
+            - '@filesystem'
+            - '@upload_imagesize'
+            - '@mimetype.guesser'
+            - '%core.root_path%'
+        tags:
+            - { name: storage.adapter }
+
+    storage.adapter.ftp:
+        class: phpbb\storage\adapter\ftp
+        shared: false
+        arguments:
+            - '@filesystem'
+            - '@upload_imagesize'
+            - '@mimetype.guesser'
+            - '%core.root_path%'
+        tags:
+            - { name: storage.adapter }
+
+    storage.adapter.google_drive:
+        class: phpbb\storage\adapter\google_drive
+        shared: false
+        arguments:
+            - '@filesystem'
+            - '@upload_imagesize'
+            - '@mimetype.guesser'
+            - '%core.root_path%'
+        tags:
+            - { name: storage.adapter }
+
 # Providers
     storage.provider.local:
         class: phpbb\storage\provider\local
+        arguments:
+        tags:
+            - { name: storage.provider }
+
+    storage.provider.aws_s3:
+        class: phpbb\storage\provider\aws_s3
+        arguments:
+        tags:
+            - { name: storage.provider }
+
+    storage.provider.azure_blob:
+        class: phpbb\storage\provider\azure_blob
+        arguments:
+        tags:
+            - { name: storage.provider }
+
+    storage.provider.dropbox:
+        class: phpbb\storage\provider\dropbox
+        arguments:
+        tags:
+            - { name: storage.provider }
+
+    storage.provider.ftp:
+        class: phpbb\storage\provider\ftp
+        arguments:
+        tags:
+            - { name: storage.provider }
+
+    storage.provider.google_drive:
+        class: phpbb\storage\provider\google_drive
         arguments:
         tags:
             - { name: storage.provider }
