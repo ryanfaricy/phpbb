@@ -77,7 +77,7 @@ class azure_blob implements adapter_interface, stream_interface
 	{
 	    $this->client = ServicesBuilder::getInstance()->createBlobService("DefaultEndpointsProtocol=https;AccountName={$options['AccountName']};AccountKey={$options['AccountKey']};");
 		$this->container = $options['Container'];
-		$this->filesystem = new League\Flysystem\Filesystem(new AzureAdapter($this->client, $this->container));
+		$this->filesystem = new \League\Flysystem\Filesystem(new AzureAdapter($this->client, $this->container));
 		$this->path = $options['path'];
 
 		if (strlen($this->path) && substr($this->path, -1) != '/')
@@ -250,12 +250,6 @@ class azure_blob implements adapter_interface, stream_interface
 		if (!$stream)
 		{
 			throw new exception('STORAGE_CANNOT_CREATE_FILE', $path);
-		}
-
-		if (stream_copy_to_stream($resource, $stream) === false)
-		{
-			fclose($stream);
-			throw new exception('STORAGE_CANNOT_COPY_RESOURCE');
 		}
 	}
 
