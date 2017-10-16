@@ -1,8 +1,0 @@
-[submodule "phpBB/ext/rubencm/multistorage"]
-	path = phpBB/ext/rubencm/multistorage
-	url = https://github.com/ryanfaricy/phpbb-ext-storage-flysystem.git
-	branch = master
-[submodule "phpbb/ext/rubencm/storage_flysystem"]
-	path = phpbb/ext/rubencm/storage_flysystem
-	url = https://github.com/ryanfaricy/phpbb-ext-storage-flysystem.git
-	branch = feature/storage-test-ryanfaricy
