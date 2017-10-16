@@ -21,13 +21,12 @@ use phpbb\filesystem\helper as filesystem_helper;
 use phpbb\mimetype\guesser;
 use FastImageSize\FastImageSize;
 use WindowsAzure\Common\ServicesBuilder;
-use League\Flysystem\Filesystem;
 use League\Flysystem\Azure\AzureAdapter;
 
 /**
  * @internal Experimental
  */
-class local implements adapter_interface, stream_interface
+class azure_blob implements adapter_interface, stream_interface
 {
 	/**
 	 * Filesystem component
@@ -78,7 +77,7 @@ class local implements adapter_interface, stream_interface
 	{
 	    $this->client = ServicesBuilder::getInstance()->createBlobService("DefaultEndpointsProtocol=https;AccountName={$options['AccountName']};AccountKey={$options['AccountKey']};");
 		$this->container = $options['Container'];
-		$this->filesystem = new Filesystem(new AzureAdapter($this->client, $this->container););
+		$this->filesystem = new League\Flysystem\Filesystem(new AzureAdapter($this->client, $this->container));
 		$this->path = $options['path'];
 
 		if (strlen($this->path) && substr($this->path, -1) != '/')
