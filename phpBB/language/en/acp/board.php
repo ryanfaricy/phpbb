@@ -357,7 +357,7 @@ $lang = array_merge($lang, array(
 	'COOKIE_NOTICE'				=> 'Cookie notice',
 	'COOKIE_NOTICE_EXPLAIN'		=> 'If enabled a cookie notice will be displayed to users when visiting your board. This might be required by law depending on the content of your board and enabled extensions.',
 	'COOKIE_PATH'				=> 'Cookie path',
-	'COOKIE_PATH_EXPLAIN'		=> 'Note that this is always a slash, it does not matter what your board URL is.',
+	'COOKIE_PATH_EXPLAIN'		=> 'This will usually be the same as your script path or simply a slash to make the cookie accessible across the site domain.',
 	'COOKIE_SECURE'				=> 'Cookie secure',
 	'COOKIE_SECURE_EXPLAIN'		=> 'If your server is running via SSL set this to enabled else leave as disabled. Having this enabled and not running via SSL will result in server errors during redirects.',
 	'ONLINE_LENGTH'				=> 'View online time span',
@@ -371,7 +371,7 @@ $lang = array_merge($lang, array(
 	'ACP_CONTACT_SETTINGS_EXPLAIN'		=> 'Here you can enable and disable the contact page and also add a text that is displayed on the page.',
 
 	'CONTACT_US_ENABLE'				=> 'Enable contact page',
-	'CONTACT_US_ENABLE_EXPLAIN'		=> 'This page allows users to send emails to board administrators',
+	'CONTACT_US_ENABLE_EXPLAIN'		=> 'This page allows users to send emails to board administrators. Please note that board-wide emails option must be enabled as well. You can find this option in General > Client Communication > Email settings.',
 
 	'CONTACT_US_INFO'				=> 'Contact information',
 	'CONTACT_US_INFO_EXPLAIN'		=> 'The message is displayed on the contact page',
