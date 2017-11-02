@@ -18,7 +18,7 @@ define('SPHINX_CONNECT_RETRIES', 3);
 define('SPHINX_CONNECT_WAIT_TIME', 300);
 
 /**
-* Fulltext search based on the sphinx search deamon
+* Fulltext search based on the sphinx search daemon
 */
 class fulltext_sphinx
 {
@@ -210,7 +210,7 @@ class fulltext_sphinx
 	/**
 	* Checks permissions and paths, if everything is correct it generates the config file
 	*
-	* @return string|bool Language key of the error/incompatiblity encountered, or false if successful
+	* @return string|bool Language key of the error/incompatibility encountered, or false if successful
 	*/
 	public function init()
 	{
@@ -304,7 +304,7 @@ class fulltext_sphinx
 				array('sql_attr_string',			'post_subject'),
 			),
 			'source source_phpbb_' . $this->id . '_delta : source_phpbb_' . $this->id . '_main' => array(
-				array('sql_query_pre',				''),
+				array('sql_query_pre',				'SET NAMES \'utf8\''),
 				array('sql_query_range',			''),
 				array('sql_range_step',				''),
 				array('sql_query',					'SELECT
@@ -324,6 +324,7 @@ class fulltext_sphinx
 					WHERE
 						p.topic_id = t.topic_id
 						AND p.post_id >=  ( SELECT max_doc_id FROM ' . SPHINX_TABLE . ' WHERE counter_id=1 )'),
+				array('sql_query_post_index',		''),
 			),
 			'index index_phpbb_' . $this->id . '_main' => array(
 				array('path',						$this->config['fulltext_sphinx_data_path'] . 'index_phpbb_' . $this->id . '_main'),
